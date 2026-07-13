@@ -1,0 +1,19 @@
+# Python / Django
+BACKEND/env/
+BACKEND/__pycache__/
+BACKEND/**/__pycache__/
+BACKEND/*.pyc
+BACKEND/db.sqlite3
+BACKEND/.env
+
+# Node / frontend
+FRONTEND/node_modules/
+FRONTEND/dist/
+FRONTEND/build/
+FRONTEND/.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
