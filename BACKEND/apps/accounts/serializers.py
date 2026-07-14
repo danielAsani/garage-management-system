@@ -1,14 +1,9 @@
 from rest_framework import serializers
-from .models import Post, UserProfile
+from .models import UserProfile
 
-class PostSerializer(serializers.ModelSerializer) : 
-    class Meta : 
-        model = Post
-        fields = "__all__"
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    post_name = serializers.CharField(source="post.name", read_only=True)
 
     class Meta:
         model = UserProfile
@@ -16,6 +11,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "role",
-            "post",
-            "post_name",
         ]

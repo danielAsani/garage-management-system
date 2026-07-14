@@ -6,14 +6,17 @@ from rest_framework import status
 from .utils import generate_zone_suffix
 from django.shortcuts import get_object_or_404
 from apps.vehicles.models import VehicleType
+from apps.permissions import CanAccessParkingConfig
 
 class ParkingViewSet(viewsets.ModelViewSet) :
     queryset = Parking.objects.all()
     serializer_class = ParkingSerializer
+    permission_classes = [CanAccessParkingConfig]
 
 class ParkingZoneViewSet(viewsets.ModelViewSet) : 
     queryset = ParkingZone.objects.select_related("parking", "vehicle_type").all()
     serializer_class = ParkingZoneSerializer
+    permission_classes = [CanAccessParkingConfig]
     def create(self, request, *args, **kwargs) : 
         parking_id = request.data.get("parking")
         vehicle_type_id = request.data.get("vehicle_type")

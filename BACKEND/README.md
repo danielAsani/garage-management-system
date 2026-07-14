@@ -1,39 +1,30 @@
-# Parking Management API
+# Garage Management System - Backend
 
-Backend Django REST Framework pour gerer un systeme de parking: vehicules, types de vehicules, parkings, zones de parking, locations et paiements.
+Backend Django REST Framework pour une application de gestion de parking/garage. L'API permet de gerer les vehicules, les types de vehicules, les parkings, les zones, les locations, les paiements et les profils utilisateurs avec authentification JWT.
 
-## Vue D'ensemble
+## Fonctionnalites
 
-Ce projet expose une API REST permettant de:
+- Authentification par JWT avec `access` et `refresh token`
+- Roles utilisateurs: `ADMIN` et `AGENT`
+- Permissions par role
+- CRUD des vehicules
+- Gestion des types de vehicules
+- Gestion des parkings et des zones
+- Generation automatique des zones de parking, par exemple `Moto-AAA`, `Moto-AAB`
+- Gestion des locations de vehicules
+- Gestion des paiements
+- Reponses API enrichies avec des champs lisibles pour le frontend
 
-- creer des types de vehicules, par exemple `Moto`, `Voiture`, `Bus`;
-- enregistrer des vehicules avec leur plaque, marque, couleur et type;
-- creer des parkings;
-- generer automatiquement plusieurs zones de parking;
-- enregistrer les entrees et sorties de vehicules;
-- enregistrer les paiements lies aux locations;
-- exposer des donnees lisibles pour le frontend, comme `vehicle_type_name`, `parking_name`, `vehicle_plaque`, etc.
-
-## Stack Technique
+## Stack
 
 - Python
 - Django
 - Django REST Framework
+- Simple JWT
 - SQLite
-- Pillow pour les champs image
+- Pillow
 
-Dependances utilisees dans l'environnement actuel:
-
-```txt
-asgiref==3.11.1
-Django==6.0.7
-djangorestframework==3.17.1
-pillow==12.3.0
-sqlparse==0.5.5
-tzdata==2026.3
-```
-
-## Structure Du Projet
+## Structure
 
 ```txt
 BACKEND/
@@ -44,47 +35,20 @@ BACKEND/
 |   |-- payments/
 |   `-- vehicles/
 |-- config/
-|   |-- settings.py
-|   `-- urls.py
 |-- manage.py
-`-- db.sqlite3
+|-- requirements.txt
+`-- README.md
 ```
 
-## Installation Locale
+## Installation
 
-Depuis le dossier du projet:
-
-```powershell
-cd C:\Users\HP\Desktop\PROJETL2\BACKEND
-```
-
-Creer un environnement virtuel:
+Depuis le dossier `BACKEND`:
 
 ```powershell
 python -m venv env
-```
-
-Activer l'environnement:
-
-```powershell
 .\env\Scripts\Activate.ps1
-```
-
-Installer les dependances:
-
-```powershell
-python -m pip install Django djangorestframework Pillow
-```
-
-Appliquer les migrations:
-
-```powershell
+python -m pip install -r requirements.txt
 python manage.py migrate
-```
-
-Lancer le serveur:
-
-```powershell
 python manage.py runserver 8001
 ```
 
@@ -94,27 +58,98 @@ Base URL locale:
 http://127.0.0.1:8001/api/
 ```
 
-## Routes API
+## Authentification JWT
+
+Obtenir un token:
+
+```http
+POST /api/token/
+```
+
+```json
+{
+  "username": "admin",
+  "password": "Admin@123"
+}
+```
+
+Reponse:
+
+```json
+{
+  "refresh": "...",
+  "access": "..."
+}
+```
+
+Renouveler le token d'acces:
+
+```http
+POST /api/token/refresh/
+```
+
+```json
+{
+  "refresh": "..."
+}
+```
+
+Pour appeler les routes protegees, ajouter le header:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+## Roles Et Permissions
+
+Le projet utilise deux roles:
+
+```txt
+ADMIN
+AGENT
+```
+
+Regles principales:
+
+| Ressource | ADMIN | AGENT |
+|---|---|---|
+| Profils utilisateurs | Tout | Aucun acces |
+| Types de vehicules | Tout | Lecture seulement |
+| Vehicules | Tout | Lire, creer, modifier |
+| Photos de vehicules | Tout | Tout |
+| Parkings | Tout | Lecture seulement |
+| Zones de parking | Tout | Lecture seulement |
+| Locations | Tout | Tout |
+| Paiements | Tout | Tout |
+
+Un utilisateur doit avoir un `UserProfile` associe pour que son role soit reconnu.
+
+## Routes Principales
+
+### Auth
+
+| Methode | URL | Description |
+|---|---|---|
+| POST | `/api/token/` | Obtenir `access` et `refresh` |
+| POST | `/api/token/refresh/` | Renouveler `access` |
 
 ### Accounts
 
 | Methode | URL | Description |
 |---|---|---|
-| GET | `/api/accounts/posts/` | Lister les postes |
-| POST | `/api/accounts/posts/` | Creer un poste |
-| GET | `/api/accounts/profiles/` | Lister les profils utilisateurs |
-| POST | `/api/accounts/profiles/` | Creer un profil utilisateur |
+| GET | `/api/accounts/profiles/` | Lister les profils |
+| POST | `/api/accounts/profiles/` | Creer un profil |
 
 ### Vehicles
 
 | Methode | URL | Description |
 |---|---|---|
-| GET | `/api/vehicles/types/` | Lister les types de vehicules |
-| POST | `/api/vehicles/types/` | Creer un type de vehicule |
+| GET | `/api/vehicles/types/` | Lister les types |
+| POST | `/api/vehicles/types/` | Creer un type |
 | GET | `/api/vehicles/vehicles/` | Lister les vehicules |
 | POST | `/api/vehicles/vehicles/` | Creer un vehicule |
-| GET | `/api/vehicles/photos/` | Lister les photos de vehicules |
-| POST | `/api/vehicles/photos/` | Ajouter une photo de vehicule |
+| GET | `/api/vehicles/photos/` | Lister les photos |
+| POST | `/api/vehicles/photos/` | Ajouter une photo |
 
 ### Parkings
 
@@ -139,13 +174,9 @@ http://127.0.0.1:8001/api/
 | GET | `/api/payments/payments/` | Lister les paiements |
 | POST | `/api/payments/payments/` | Creer un paiement |
 
-## Exemples De Requetes
+## Exemples JSON
 
-### Creer Un Type De Vehicule
-
-```http
-POST /api/vehicles/types/
-```
+Creer un type de vehicule:
 
 ```json
 {
@@ -154,11 +185,7 @@ POST /api/vehicles/types/
 }
 ```
 
-### Creer Un Vehicule
-
-```http
-POST /api/vehicles/vehicles/
-```
+Creer un vehicule:
 
 ```json
 {
@@ -169,25 +196,7 @@ POST /api/vehicles/vehicles/
 }
 ```
 
-La plaque est normalisee cote backend avec `upper().strip()`.
-
-### Creer Un Parking
-
-```http
-POST /api/parkings/parkings/
-```
-
-```json
-{
-  "name": "Parking Central"
-}
-```
-
-### Generer Des Zones De Parking
-
-```http
-POST /api/parkings/zones/
-```
+Generer des zones:
 
 ```json
 {
@@ -197,7 +206,7 @@ POST /api/parkings/zones/
 }
 ```
 
-Exemple de zones generees:
+Exemple de resultat:
 
 ```txt
 Moto-AAA
@@ -207,22 +216,7 @@ Moto-AAD
 Moto-AAE
 ```
 
-Le backend:
-
-1. recupere le parking;
-2. recupere le type de vehicule;
-3. lit la quantite demandee;
-4. compte les zones existantes pour ce parking et ce type;
-5. genere les prochains noms;
-6. retourne la liste des zones creees.
-
-Une contrainte empeche deux zones d'avoir le meme nom dans un meme parking.
-
-### Creer Une Location
-
-```http
-POST /api/locations/locations/
-```
+Creer une location:
 
 ```json
 {
@@ -234,13 +228,7 @@ POST /api/locations/locations/
 }
 ```
 
-Le champ `code` est genere automatiquement par le backend.
-
-### Creer Un Paiement
-
-```http
-POST /api/payments/payments/
-```
+Creer un paiement:
 
 ```json
 {
@@ -251,80 +239,36 @@ POST /api/payments/payments/
 }
 ```
 
-Methodes de paiement disponibles:
+## Champs Lisibles
 
-```txt
-CASH
-ORANGE_MONEY
-MPESA
-AIRTEL_MONEY
-ILLICOCASH
-```
+Les serializers ajoutent des champs en lecture seule pour faciliter l'affichage frontend:
 
-Statuts disponibles:
+- `vehicle_type_name`
+- `parking_name`
+- `vehicle_plaque`
+- `vehicle_marque`
+- `vehicle_couleur`
+- `location_code`
 
-```txt
-PENDING
-PAID
-FAILED
-CANCELLED
-```
-
-## Champs Lisibles Pour Le Frontend
-
-Plusieurs serializers renvoient des champs supplementaires en lecture seule pour eviter au frontend de refaire trop de requetes.
-
-Exemples:
-
-- `vehicle_type_name` dans les vehicules;
-- `parking_name` et `vehicle_type_name` dans les zones;
-- `vehicle_plaque`, `vehicle_marque`, `vehicle_couleur` dans les locations;
-- `location_code` et `vehicle_plaque` dans les paiements;
-- `post_name` dans les profils utilisateurs.
-
-Ces champs sont en lecture seule. Pour creer ou modifier une relation, il faut toujours envoyer l'id.
+Ces champs ne doivent pas etre envoyes dans les `POST`. Pour les relations, envoyer les ids.
 
 ## Verification
 
-Verifier la configuration Django:
-
 ```powershell
 python manage.py check
-```
-
-Verifier les migrations:
-
-```powershell
 python manage.py makemigrations --check --dry-run
+python manage.py test
 ```
 
-Appliquer les migrations:
+Note: les tests automatises restent a enrichir.
 
-```powershell
-python manage.py migrate
-```
+## Publication GitHub
 
-## Ordre De Test Conseille Dans Postman
+Ne pas publier:
 
-1. `POST /api/vehicles/types/`
-2. `POST /api/vehicles/vehicles/`
-3. `POST /api/parkings/parkings/`
-4. `POST /api/parkings/zones/`
-5. `POST /api/locations/locations/`
-6. `POST /api/payments/payments/`
+- `env/`
+- `db.sqlite3`
+- `__pycache__/`
+- fichiers `.env`
 
-Apres chaque `POST`, tester le `GET` correspondant pour verifier que l'objet est bien cree.
-
-## Notes Pour Publication GitHub
-
-Avant de publier publiquement:
-
-- ne pas pousser le dossier `env/`;
-- eviter de pousser des fichiers caches `__pycache__/`;
-- envisager de retirer `db.sqlite3` si le depot doit etre un projet propre sans donnees locales;
-- deplacer `SECRET_KEY` et `DEBUG` vers des variables d'environnement pour un usage hors developpement;
-- ajouter un fichier `.gitignore` adapte a Python/Django.
-
-## Statut
-
-Le projet est un backend API Django REST Framework fonctionnel pour un systeme de gestion de parking.
+Le projet contient encore une configuration locale dans `settings.py`. Pour une mise en production, deplacer `SECRET_KEY`, `DEBUG` et `ALLOWED_HOSTS` vers des variables d'environnement.
