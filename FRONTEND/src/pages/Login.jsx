@@ -33,58 +33,57 @@ function Login() {
     }
 
     return (
-        <div id="layoutAuthentication">
-            <div id="layoutAuthentication_content">
-                <main>
-                    <div className="container">
-                        <div className="row justify-content-center">
-                            <div className="col-lg-5 col-md-7">
-                                <div className="card shadow-lg border-0 rounded-lg mt-5">
-                                    <div className="card-header text-center">
-                                        <span className="brand-mark mx-auto mb-3">
-                                            <i className="fa-solid fa-square-parking" />
-                                        </span>
-                                        <h3 className="fw-bold my-2">Garage Manager</h3>
-                                        <p className="text-muted mb-0">Connexion agent et administrateur</p>
-                                    </div>
-                                    <div className="card-body">
-                                        <form onSubmit={handleSubmit}>
-                                            <Alert message={error} />
-                                            <Input
-                                                label="Nom d'utilisateur"
-                                                value={username}
-                                                onChange={(e) => setUsername(e.target.value)}
-                                                autoComplete="username"
-                                                required
-                                            />
-
-                                            <Input
-                                                label="Mot de passe"
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                autoComplete="current-password"
-                                                required
-                                            />
-
-                                            <Button type="submit" className="w-100 btn-lg" disabled={loading}>
-                                                {loading ? "Connexion..." : "Se connecter"}
-                                            </Button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div className="login-screen">
+            <section className="login-hero">
+                <div className="login-brand-block">
+                    <span className="brand-mark">
+                        <i className="fa-solid fa-square-parking" />
+                    </span>
+                    <div>
+                        <strong>Garage Manager</strong>
+                        <span>Parking, paiements et operations</span>
                     </div>
-                </main>
-            </div>
-            <div id="layoutAuthentication_footer">
-                <footer className="py-4 bg-light mt-auto">
-                    <div className="container-fluid px-4">
-                        <div className="text-muted small text-center">Garage Manager</div>
-                    </div>
-                </footer>
-            </div>
+                </div>
+
+                <div className="login-copy">
+                    <span className="soft-pill">Version 1.0</span>
+                    <h1>Gestion rapide d'un parking moderne.</h1>
+                    <p>
+                        Suivez les entrees, sorties, places, photos et paiements depuis une interface simple pour agents et administrateurs.
+                    </p>
+                </div>
+            </section>
+
+            <section className="login-panel">
+                <div className="login-panel-header">
+                    <h2>Connexion</h2>
+                    <p>Accede a ton espace de travail.</p>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <Alert message={error} />
+                    <Input
+                        label="Nom d'utilisateur"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
+                        required
+                    />
+
+                    <Input
+                        label="Mot de passe"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        required
+                    />
+
+                    <Button type="submit" className="w-100 btn-lg" disabled={loading}>
+                        {loading ? "Connexion..." : "Se connecter"}
+                    </Button>
+                </form>
+            </section>
         </div>
     );
 }
