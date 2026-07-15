@@ -30,6 +30,28 @@ function formatMoney(value) {
   })} FC`;
 }
 
+function formatReceiptMoney(value) {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return "-";
+  }
+
+  const hasDecimals = !Number.isInteger(amount);
+  const formattedAmount = amount
+    .toLocaleString("fr-FR", {
+      minimumFractionDigits: hasDecimals ? 2 : 0,
+      maximumFractionDigits: 2,
+    })
+    .replace(/\u202f|\u00a0/g, " ");
+
+  return `${formattedAmount} FC`;
+}
+
 const emptyEntryForm = {
   plaque: "",
   vehicle_type: "",
@@ -101,7 +123,7 @@ function getReceiptRows({ location, payment }) {
     ["Sortie", formatDateTime(location.heure_sortie)],
     ["Methode", payment.method],
     ["Identifiant", payment.payment_identifier || "-"],
-    ["Total", formatMoney(payment.amount)],
+    ["Total", formatReceiptMoney(payment.amount)],
     ["Paye le", paidAt],
   ];
 }
@@ -134,7 +156,7 @@ function printReceipt({ location, payment }) {
           h1 { font-size: 15px; margin: 0 0 3mm; }
           .line { border-top: 1px dashed #111; margin: 3mm 0; }
           .row { display: flex; justify-content: space-between; gap: 4mm; margin: 1.5mm 0; }
-          .row span:last-child { text-align: right; font-weight: 700; }
+          .row span:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
           .total { font-size: 14px; font-weight: 700; }
           @media print {
             body { width: 72mm; }

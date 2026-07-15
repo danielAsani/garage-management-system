@@ -47,7 +47,6 @@ class PaymentViewSet(viewsets.ModelViewSet) :
     @action(detail=False, methods=["get"], url_path="summary")
     def summary(self, request):
         paid_payments = Payment.objects.filter(status=Payment.Status.PAID)
-        pending_payments = Payment.objects.filter(status=Payment.Status.PENDING)
         recent_payments = self.get_serializer(
             self.queryset[:100],
             many=True,
@@ -60,9 +59,7 @@ class PaymentViewSet(viewsets.ModelViewSet) :
 
         return Response({
             "total_paid": paid_payments.aggregate(total=Sum("amount"))["total"] or 0,
-            "total_pending": pending_payments.aggregate(total=Sum("amount"))["total"] or 0,
             "paid_count": paid_payments.count(),
-            "pending_count": pending_payments.count(),
             "exited_count": Location.objects.filter(statut=Location.Statut.EXITED).count(),
             "by_method": by_method,
             "recent_payments": recent_payments,

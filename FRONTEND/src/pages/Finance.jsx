@@ -27,9 +27,7 @@ function Finance() {
   const { isAdmin } = useAuth();
   const [stats, setStats] = useState({
     totalPaid: 0,
-    totalPending: 0,
     paidCount: 0,
-    pendingCount: 0,
     exitedCount: 0,
     byMethod: {},
     recentPayments: [],
@@ -44,9 +42,7 @@ function Finance() {
 
       setStats({
         totalPaid: Number(data.total_paid || 0),
-        totalPending: Number(data.total_pending || 0),
         paidCount: data.paid_count || 0,
-        pendingCount: data.pending_count || 0,
         exitedCount: data.exited_count || 0,
         byMethod: data.by_method || {},
         recentPayments: data.recent_payments || [],
@@ -83,12 +79,6 @@ function Finance() {
               <strong>{toMoney(stats.totalPaid)}</strong>
               <small className="muted-text">{toDollar(stats.totalPaid)}</small>
               <i className="fa-solid fa-sack-dollar" />
-            </div>
-            <div className="stat-card">
-              <span>En attente</span>
-              <strong>{toMoney(stats.totalPending)}</strong>
-              <small className="muted-text">{toDollar(stats.totalPending)}</small>
-              <i className="fa-solid fa-clock" />
             </div>
             <div className="stat-card">
               <span>Paiements payes</span>
