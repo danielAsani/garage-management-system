@@ -1,19 +1,19 @@
 # Garage Management System - Backend
 
-Backend Django REST Framework pour une application de gestion de parking/garage. L'API permet de gerer les vehicules, les types de vehicules, les parkings, les zones, les locations, les paiements et les profils utilisateurs avec authentification JWT.
+Backend Django REST Framework pour une application de gestion de parking. Il fournit une API JWT pour gerer les utilisateurs, vehicules, types de vehicules, parkings, zones, entrees/sorties, paiements et photos.
 
 ## Fonctionnalites
 
-- Authentification par JWT avec `access` et `refresh token`
-- Roles utilisateurs: `ADMIN` et `AGENT`
-- Permissions par role
-- CRUD des vehicules
-- Gestion des types de vehicules
-- Gestion des parkings et des zones
-- Generation automatique des zones de parking, par exemple `Moto-AAA`, `Moto-AAB`
-- Gestion des locations de vehicules
-- Gestion des paiements
-- Reponses API enrichies avec des champs lisibles pour le frontend
+- Authentification JWT avec access token et refresh token
+- Roles `ADMIN` et `AGENT`
+- Gestion des utilisateurs par l'administrateur
+- CRUD des vehicules et types de vehicules
+- Photos de vehicules via upload multipart
+- Creation des parkings et generation automatique des zones
+- Entree et sortie des vehicules avec controle des emplacements occupes
+- Paiement en francs congolais avec montant calcule automatiquement cote backend
+- Identifiant obligatoire pour les paiements non cash
+- Recu imprimable ou telechargeable cote frontend
 
 ## Stack
 
@@ -23,42 +23,42 @@ Backend Django REST Framework pour une application de gestion de parking/garage.
 - Simple JWT
 - SQLite
 - Pillow
-
-## Structure
-
-```txt
-BACKEND/
-|-- apps/
-|   |-- accounts/
-|   |-- locations/
-|   |-- parkings/
-|   |-- payments/
-|   `-- vehicles/
-|-- config/
-|-- manage.py
-|-- requirements.txt
-`-- README.md
-```
+- django-cors-headers
 
 ## Installation
 
-Depuis le dossier `BACKEND`:
+Depuis `BACKEND`:
 
 ```powershell
 python -m venv env
 .\env\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+copy .env.example .env
 python manage.py migrate
-python manage.py runserver 8001
+python manage.py createsuperuser
+python manage.py runserver 8000
 ```
 
 Base URL locale:
 
 ```txt
-http://127.0.0.1:8001/api/
+http://127.0.0.1:8000/api/
 ```
 
-## Authentification JWT
+## Configuration
+
+Les variables disponibles sont dans `.env.example`:
+
+```env
+DJANGO_SECRET_KEY=change-me
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+```
+
+Pour un depot public ou une mise en production, ne mets jamais la vraie cle secrete directement dans `settings.py`.
+
+## Authentification
 
 Obtenir un token:
 
@@ -68,33 +68,18 @@ POST /api/token/
 
 ```json
 {
-  "username": "admin",
-  "password": "Admin@123"
+  "username": "votre_username",
+  "password": "votre_mot_de_passe"
 }
 ```
 
-Reponse:
-
-```json
-{
-  "refresh": "...",
-  "access": "..."
-}
-```
-
-Renouveler le token d'acces:
+Renouveler le token:
 
 ```http
 POST /api/token/refresh/
 ```
 
-```json
-{
-  "refresh": "..."
-}
-```
-
-Pour appeler les routes protegees, ajouter le header:
+Toutes les routes metier demandent:
 
 ```http
 Authorization: Bearer <access_token>
@@ -102,101 +87,55 @@ Authorization: Bearer <access_token>
 
 ## Roles Et Permissions
 
-Le projet utilise deux roles:
-
-```txt
-ADMIN
-AGENT
-```
-
-Regles principales:
-
 | Ressource | ADMIN | AGENT |
 |---|---|---|
-| Profils utilisateurs | Tout | Aucun acces |
-| Types de vehicules | Tout | Lecture seulement |
-| Vehicules | Tout | Lire, creer, modifier |
-| Photos de vehicules | Tout | Tout |
-| Parkings | Tout | Lecture seulement |
-| Zones de parking | Tout | Lecture seulement |
-| Locations | Tout | Tout |
-| Paiements | Tout | Tout |
-
-Un utilisateur doit avoir un `UserProfile` associe pour que son role soit reconnu.
+| Utilisateurs | CRUD | Interdit |
+| Profils | CRUD | Interdit |
+| Types de vehicules | CRUD | Lecture |
+| Vehicules | CRUD | Lire, creer, modifier |
+| Photos | CRUD | CRUD |
+| Parkings | CRUD | Lecture |
+| Zones | CRUD | Lecture |
+| Locations | CRUD | CRUD |
+| Paiements | CRUD | CRUD |
 
 ## Routes Principales
 
-### Auth
-
-| Methode | URL | Description |
-|---|---|---|
-| POST | `/api/token/` | Obtenir `access` et `refresh` |
-| POST | `/api/token/refresh/` | Renouveler `access` |
-
 ### Accounts
 
-| Methode | URL | Description |
-|---|---|---|
-| GET | `/api/accounts/profiles/` | Lister les profils |
-| POST | `/api/accounts/profiles/` | Creer un profil |
+```txt
+GET    /api/accounts/me/
+GET    /api/accounts/users/
+POST   /api/accounts/users/
+PATCH  /api/accounts/users/{id}/
+DELETE /api/accounts/users/{id}/
+GET    /api/accounts/profiles/
+```
 
 ### Vehicles
 
-| Methode | URL | Description |
-|---|---|---|
-| GET | `/api/vehicles/types/` | Lister les types |
-| POST | `/api/vehicles/types/` | Creer un type |
-| GET | `/api/vehicles/vehicles/` | Lister les vehicules |
-| POST | `/api/vehicles/vehicles/` | Creer un vehicule |
-| GET | `/api/vehicles/photos/` | Lister les photos |
-| POST | `/api/vehicles/photos/` | Ajouter une photo |
+```txt
+GET    /api/vehicles/types/
+POST   /api/vehicles/types/
+PATCH  /api/vehicles/types/{id}/
+GET    /api/vehicles/vehicles/
+POST   /api/vehicles/vehicles/
+PATCH  /api/vehicles/vehicles/{id}/
+GET    /api/vehicles/photos/
+POST   /api/vehicles/photos/
+```
 
 ### Parkings
 
-| Methode | URL | Description |
-|---|---|---|
-| GET | `/api/parkings/parkings/` | Lister les parkings |
-| POST | `/api/parkings/parkings/` | Creer un parking |
-| GET | `/api/parkings/zones/` | Lister les zones |
-| POST | `/api/parkings/zones/` | Generer plusieurs zones |
-
-### Locations
-
-| Methode | URL | Description |
-|---|---|---|
-| GET | `/api/locations/locations/` | Lister les locations |
-| POST | `/api/locations/locations/` | Creer une location |
-
-### Payments
-
-| Methode | URL | Description |
-|---|---|---|
-| GET | `/api/payments/payments/` | Lister les paiements |
-| POST | `/api/payments/payments/` | Creer un paiement |
-
-## Exemples JSON
-
-Creer un type de vehicule:
-
-```json
-{
-  "name": "Moto",
-  "tarif_hours": "1000.00"
-}
+```txt
+GET    /api/parkings/parkings/
+POST   /api/parkings/parkings/
+GET    /api/parkings/zones/
+POST   /api/parkings/zones/
+DELETE /api/parkings/zones/{id}/
 ```
 
-Creer un vehicule:
-
-```json
-{
-  "plaque": "abc123",
-  "vehicle_type": 1,
-  "marque": "Toyota",
-  "couleur": "Noir"
-}
-```
-
-Generer des zones:
+`POST /api/parkings/zones/` genere plusieurs zones automatiquement:
 
 ```json
 {
@@ -206,51 +145,47 @@ Generer des zones:
 }
 ```
 
-Exemple de resultat:
+Exemple de noms generes:
 
 ```txt
 Moto-AAA
 Moto-AAB
 Moto-AAC
-Moto-AAD
-Moto-AAE
 ```
 
-Creer une location:
+### Locations
 
-```json
-{
-  "vehicle": 1,
-  "nom_deposeur": "Jean",
-  "telephone": "0810000000",
-  "heure_entree": "2026-07-13T10:00:00Z",
-  "statut": "PARKED"
-}
+```txt
+GET    /api/locations/locations/
+POST   /api/locations/locations/
+PATCH  /api/locations/locations/{id}/
 ```
 
-Creer un paiement:
+Une location `PARKED` empeche:
 
-```json
-{
-  "location": 1,
-  "amount": "1000.00",
-  "method": "CASH",
-  "status": "PENDING"
-}
+- de garer deux fois le meme vehicule;
+- d'occuper deux fois la meme zone;
+- de choisir une zone incompatible avec le type du vehicule.
+
+### Payments
+
+```txt
+GET    /api/payments/payments/
+POST   /api/payments/payments/
+PATCH  /api/payments/payments/{id}/
 ```
 
-## Champs Lisibles
+Le champ `amount` est calcule automatiquement cote backend en francs congolais avec:
 
-Les serializers ajoutent des champs en lecture seule pour faciliter l'affichage frontend:
+```txt
+tarif_horaire / 60 * minutes_facturees
+```
 
-- `vehicle_type_name`
-- `parking_name`
-- `vehicle_plaque`
-- `vehicle_marque`
-- `vehicle_couleur`
-- `location_code`
+Exemple: si 1h coute `1000`, alors 30 minutes coutent `500`.
 
-Ces champs ne doivent pas etre envoyes dans les `POST`. Pour les relations, envoyer les ids.
+Le montant minimum facture est `500 FC`. Si le calcul donne moins de `500 FC`, le paiement reste donc a `500 FC`.
+
+Pour un paiement non cash, `payment_identifier` est obligatoire.
 
 ## Verification
 
@@ -260,15 +195,16 @@ python manage.py makemigrations --check --dry-run
 python manage.py test
 ```
 
-Note: les tests automatises restent a enrichir.
+Note: les tests automatises sont encore a ajouter.
 
-## Publication GitHub
+## Fichiers A Ne Pas Publier
 
-Ne pas publier:
+Le `.gitignore` exclut notamment:
 
-- `env/`
-- `db.sqlite3`
-- `__pycache__/`
-- fichiers `.env`
-
-Le projet contient encore une configuration locale dans `settings.py`. Pour une mise en production, deplacer `SECRET_KEY`, `DEBUG` et `ALLOWED_HOSTS` vers des variables d'environnement.
+- `BACKEND/env/`
+- `BACKEND/db.sqlite3`
+- `BACKEND/.env`
+- `BACKEND/media/`
+- `FRONTEND/node_modules/`
+- `FRONTEND/dist/`
+- `FRONTEND/.env`

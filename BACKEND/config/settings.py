@@ -1,21 +1,43 @@
 
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def load_local_env():
+    env_path = BASE_DIR / ".env"
+
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_local_env()
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1)k29uzp1)eah#7_)y-!6)ex^karf5@$6ph$)%3r3b$zu&hi)u'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-dev-secret-key-change-me-please-change")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1",
+).split(",")
 
 
 # Application definition
@@ -33,6 +55,7 @@ INSTALLED_APPS = [
     'apps.parkings.apps.ParkingsConfig',
     'apps.payments.apps.PaymentsConfig',
     'apps.vehicles.apps.VehiclesConfig',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -42,9 +65,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_PAGINATION_CLASS" : "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE" : 100
+
 }
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,7 +100,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "DJANGO_CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
+).split(",")
 
 
 DATABASES = {
@@ -119,3 +149,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"

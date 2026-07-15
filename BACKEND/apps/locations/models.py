@@ -23,6 +23,14 @@ class Location(models.Model):
         related_name="locations",
     )
 
+    parking_zone = models.ForeignKey(
+        "parkings.ParkingZone",
+        on_delete=models.PROTECT,
+        related_name="locations",
+        blank=True,
+        null=True,
+    )
+
     nom_deposeur = models.CharField(
         max_length=100,
     )
@@ -61,6 +69,28 @@ class Location(models.Model):
             raise ValidationError({
                 "heure_sortie": "L'heure de sortie doit etre apres l'heure d'entree."
             })
+
+        if self.statut == self.Statut.PARKED:
+            if Location.objects.filter(
+                vehicle=self.vehicle,
+                statut=self.Statut.PARKED,
+            ).exclude(pk=self.pk).exists():
+                raise ValidationError({
+                    "vehicle": "Ce vehicule est deja gare."
+                })
+
+            if self.parking_zone and Location.objects.filter(
+                parking_zone=self.parking_zone,
+                statut=self.Statut.PARKED,
+            ).exclude(pk=self.pk).exists():
+                raise ValidationError({
+                    "parking_zone": "Cet emplacement est deja occupe."
+                })
+
+            if self.parking_zone and self.vehicle_id and self.vehicle.vehicle_type_id != self.parking_zone.vehicle_type_id:
+                raise ValidationError({
+                    "parking_zone": "Cet emplacement ne correspond pas au type du vehicule."
+                })
 
     def save(self, *args, **kwargs):
         if not self.code:

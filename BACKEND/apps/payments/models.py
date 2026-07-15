@@ -1,4 +1,5 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+from math import ceil
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -7,6 +8,7 @@ from django.utils import timezone
 
 
 class Payment(models.Model):
+    MINIMUM_AMOUNT = Decimal("500.00")
 
     class Method(models.TextChoices):
         CASH = "CASH", "Cash"
@@ -40,6 +42,11 @@ class Payment(models.Model):
         choices=Method.choices,
     )
 
+    payment_identifier = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
@@ -63,6 +70,18 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.location.code} - {self.amount} - {self.get_status_display()}"
 
+    def calculate_amount(self):
+        location = self.location
+        vehicle_type = location.vehicle.vehicle_type
+        hourly_rate = vehicle_type.tarif_hours
+        end_time = location.heure_sortie or timezone.now()
+        duration_seconds = max(0, (end_time - location.heure_entree).total_seconds())
+        billed_minutes = max(1, ceil(duration_seconds / 60))
+        amount = hourly_rate * Decimal(billed_minutes) / Decimal("60")
+        amount = max(amount, self.MINIMUM_AMOUNT)
+
+        return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     def clean(self):
         super().clean()
 
@@ -71,7 +90,15 @@ class Payment(models.Model):
                 "amount": "Le montant doit etre superieur a 0."
             })
 
+        if self.method != self.Method.CASH and not self.payment_identifier:
+            raise ValidationError({
+                "payment_identifier": "L'identifiant du paiement est obligatoire si le paiement n'est pas en cash."
+            })
+
     def save(self, *args, **kwargs):
+        if self.location_id:
+            self.amount = self.calculate_amount()
+
         if self.status == self.Status.PAID and self.paid_at is None:
             self.paid_at = timezone.now()
 
