@@ -1,0 +1,73 @@
+{% extends "web/base.html" %}
+{% load web_extras %}
+
+{% block content %}
+{% include "web/partials/page_header.html" %}
+
+<section class="stats-grid">
+  <div class="stat-card">
+    <span>Total encaisse</span>
+    <strong>{{ total_paid|fc }}</strong>
+    <small class="muted-text">{{ total_paid|usd }}</small>
+    <i class="fa-solid fa-sack-dollar"></i>
+  </div>
+  <div class="stat-card">
+    <span>Paiements payes</span>
+    <strong>{{ paid_count }}</strong>
+    <i class="fa-solid fa-circle-check"></i>
+  </div>
+  <div class="stat-card">
+    <span>Vehicules sortis</span>
+    <strong>{{ exited_count }}</strong>
+    <i class="fa-solid fa-right-from-bracket"></i>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-title"><h2>Rendu par methode</h2></div>
+  {% if by_method %}
+    <div class="finance-method-grid">
+      {% for row in by_method %}
+      <article class="data-card">
+        <span>{{ row.method }}</span>
+        <strong>{{ row.amount|fc }}</strong>
+        <small class="muted-text">{{ row.amount|usd }}</small>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "web/partials/empty.html" with title="Aucun paiement paye" text="Les revenus apparaitront apres les sorties payees." %}
+  {% endif %}
+</section>
+
+<section class="content-section">
+  <div class="section-title"><h2>Historique financier</h2></div>
+  {% if recent_payments %}
+    <div class="item-list">
+      {% for payment in recent_payments %}
+      <article class="data-card">
+        <div class="data-card-header">
+          <div>
+            <strong>{{ payment.location.vehicle.plaque }}</strong>
+            <span>{{ payment.location.code }}</span>
+          </div>
+          <span class="status-pill status-{{ payment.status|lower }}">{{ payment.status }}</span>
+        </div>
+        <dl class="meta-grid">
+          <div>
+            <dt>Montant</dt>
+            <dd><strong>{{ payment.amount|fc }}</strong><small class="muted-text d-block">{{ payment.amount|usd }}</small></dd>
+          </div>
+          <div><dt>Methode</dt><dd>{{ payment.method }}</dd></div>
+          <div><dt>Identifiant</dt><dd>{{ payment.payment_identifier|default:"-" }}</dd></div>
+          <div><dt>Paye le</dt><dd>{{ payment.paid_at|date:"d/m/Y H:i"|default:"-" }}</dd></div>
+        </dl>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "web/partials/empty.html" with title="Aucun paiement" text="Les paiements finalises aux sorties apparaitront ici." %}
+  {% endif %}
+</section>
+{% endblock %}
+

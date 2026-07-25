@@ -1,0 +1,54 @@
+{% load static %}
+<!doctype html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion - Garage Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'web/favicon.svg' %}" rel="icon" type="image/svg+xml">
+    <link href="{% static 'web/css/global.css' %}" rel="stylesheet">
+  </head>
+  <body>
+    <div class="login-screen">
+      <section class="login-hero">
+        <div class="login-brand-block">
+          <span class="brand-mark"><i class="fa-solid fa-square-parking"></i></span>
+          <div>
+            <strong>Garage Manager</strong>
+            <span>Parking, paiements et operations</span>
+          </div>
+        </div>
+
+        <div class="login-copy">
+          <span class="soft-pill">Version 1.0</span>
+          <h1>Gestion rapide d'un parking moderne.</h1>
+          <p>Suivez les entrees, sorties, places, photos et paiements depuis une interface simple pour agents et administrateurs.</p>
+        </div>
+      </section>
+
+      <section class="login-panel">
+        <div class="login-panel-header">
+          <h2>Connexion</h2>
+          <p>Accede a ton espace de travail.</p>
+        </div>
+
+        {% include "web/partials/messages.html" %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="username">Nom d'utilisateur</label>
+            <input class="form-control" id="username" name="username" autocomplete="username" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password">Mot de passe</label>
+            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button class="btn btn-primary w-100 btn-lg" type="submit">Se connecter</button>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>

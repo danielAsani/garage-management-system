@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erreur serveur - Garage Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'web/favicon.svg' %}" rel="icon" type="image/svg+xml">
+    <link href="{% static 'web/css/global.css' %}" rel="stylesheet">
+  </head>
+  <body>
+    <main class="login-screen">
+      <section class="login-panel">
+        <div class="login-panel-header">
+          <h2>Erreur serveur</h2>
+          <p>Une erreur interne est survenue. Reessaie dans un instant.</p>
+        </div>
+        <a class="btn btn-primary w-100" href="/">Retour a l'accueil</a>
+      </section>
+    </main>
+  </body>
+</html>

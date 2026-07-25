@@ -1,0 +1,49 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+{% include "web/partials/page_header.html" %}
+
+<section class="stats-grid">
+  <div class="stat-card">
+    <span>Vehicules</span>
+    <strong>{{ vehicle_count }}</strong>
+    <i class="fa-solid fa-car"></i>
+  </div>
+  <div class="stat-card">
+    <span>En stationnement</span>
+    <strong>{{ parked_count }}</strong>
+    <i class="fa-solid fa-square-parking"></i>
+  </div>
+  <div class="stat-card">
+    <span>Paiements payes</span>
+    <strong>{{ paid_count }}</strong>
+    <i class="fa-solid fa-circle-check"></i>
+  </div>
+  <div class="stat-card">
+    <span>En attente</span>
+    <strong>{{ pending_count }}</strong>
+    <i class="fa-solid fa-clock"></i>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-title"><h2>Dernieres entrees</h2></div>
+  {% if recent_locations %}
+    <div class="item-list">
+      {% for location in recent_locations %}
+        <a class="data-card location-click-card" href="?location={{ location.id }}">
+          <div>
+            <strong>{{ location.vehicle.plaque }}</strong>
+            <span>{{ location.nom_deposeur }}</span>
+          </div>
+          <span class="status-pill status-{{ location.statut|lower }}">{{ location.statut }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "web/partials/empty.html" with title="Aucune entree" text="Les locations creees apparaitront ici." %}
+  {% endif %}
+</section>
+
+{% include "web/partials/location_modal.html" %}
+{% endblock %}

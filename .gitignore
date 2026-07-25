@@ -1,17 +1,11 @@
 # Python / Django
-BACKEND/env/
-BACKEND/__pycache__/
-BACKEND/**/__pycache__/
-BACKEND/*.pyc
-BACKEND/db.sqlite3
-BACKEND/.env
-BACKEND/media/
-
-# Node / frontend
-FRONTEND/node_modules/
-FRONTEND/dist/
-FRONTEND/build/
-FRONTEND/.env
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+db.sqlite3
+.env
+media/
 
 # OS / editor
 .DS_Store

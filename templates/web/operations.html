@@ -1,0 +1,222 @@
+{% extends "web/base.html" %}
+{% load web_extras %}
+
+{% block content %}
+{% include "web/partials/page_header.html" %}
+
+<div class="operation-tabs" data-tabs>
+  <button class="{% if active_tab == 'entry' %}active{% endif %}" type="button" data-tab-button="entry">
+    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+    Entrer
+  </button>
+  <button class="{% if active_tab == 'exit' %}active{% endif %}" type="button" data-tab-button="exit">
+    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    Sortir
+  </button>
+</div>
+
+<section class="form-panel operation-pane" data-tab-panel="entry" {% if active_tab != 'entry' %}hidden{% endif %}>
+  <div class="section-title"><h2>Garer un vehicule</h2></div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="entry">
+
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="plaque">Plaque</label>
+        <input class="form-control" id="plaque" name="plaque" list="vehicle-plates" placeholder="Ex: CGO-1234" required>
+        <datalist id="vehicle-plates">
+          {% for vehicle in vehicles %}<option value="{{ vehicle.plaque }}">{{ vehicle.marque }} {{ vehicle.couleur }}</option>{% endfor %}
+        </datalist>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="vehicle_type">Type de vehicule</label>
+        <select class="form-select" id="vehicle_type" name="vehicle_type" data-zone-filter-source>
+          <option value="">Choisir si nouveau vehicule</option>
+          {% for type in types %}
+            <option value="{{ type.id }}">{{ type.name }} - {{ type.tarif_hours|fc }}/h</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="marque">Marque</label>
+        <input class="form-control" id="marque" name="marque" placeholder="Toyota, Honda...">
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="couleur">Couleur</label>
+        <input class="form-control" id="couleur" name="couleur" placeholder="Noir, blanc...">
+      </div>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="nom_deposeur">Deposeur</label>
+        <input class="form-control" id="nom_deposeur" name="nom_deposeur" required>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="telephone">Telephone</label>
+        <input class="form-control" id="telephone" name="telephone">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="parking_zone">Emplacement</label>
+      <select class="form-select" id="parking_zone" name="parking_zone" required data-zone-filter-target>
+        <option value="">Choisir un emplacement disponible</option>
+        {% for parking in parkings %}
+          <optgroup label="{{ parking.name }}">
+            {% for zone in zones %}
+              {% if zone.parking_id == parking.id and not zone.is_occupied %}
+                <option value="{{ zone.id }}" data-type="{{ zone.vehicle_type_id }}">{{ zone.name }} - {{ zone.vehicle_type.name }}</option>
+              {% endif %}
+            {% endfor %}
+          </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="photos">Photos du vehicule</label>
+      <input class="form-control" id="photos" name="photos" type="file" accept="image/*" multiple>
+      <small class="form-text">Optionnel. Tu peux joindre plusieurs photos a l'entree.</small>
+    </div>
+
+    <button class="btn btn-primary w-100" type="submit">Garer le vehicule</button>
+  </form>
+</section>
+
+<section class="form-panel operation-pane" data-tab-panel="exit" {% if active_tab != 'exit' %}hidden{% endif %}>
+  <div class="section-title"><h2>Sortir un vehicule</h2></div>
+
+  <form class="search-line" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="search_exit">
+    <div class="mb-3">
+      <label class="form-label" for="search">Code ou plaque</label>
+      <input class="form-control" id="search" name="search" value="{{ exit_search }}" placeholder="LOC... ou plaque" required>
+    </div>
+    <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+  </form>
+
+  {% if exit_target %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="finalize_exit">
+    <input type="hidden" name="location_id" value="{{ exit_target.id }}">
+
+    <article class="data-card exit-target-card">
+      <div class="data-card-header">
+        <div>
+          <strong>{{ exit_target.vehicle.plaque }}</strong>
+          <span>{{ exit_target.code }}</span>
+        </div>
+        <span class="status-pill status-parked">GARE</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>Parking</dt><dd>{{ exit_target.parking_zone.parking.name|default:"-" }}</dd></div>
+        <div><dt>Emplacement</dt><dd>{{ exit_target.parking_zone.name|default:"-" }}</dd></div>
+        <div><dt>Deposeur</dt><dd>{{ exit_target.nom_deposeur }}</dd></div>
+        <div><dt>Entree</dt><dd>{{ exit_target.heure_entree|date:"d/m/Y H:i" }}</dd></div>
+        <div><dt>Tarif</dt><dd>{{ exit_target.vehicle.vehicle_type.tarif_hours|fc }}/h</dd></div>
+        <div><dt>Duree facturee</dt><dd>{{ exit_minutes }} min</dd></div>
+      </dl>
+    </article>
+
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <label class="form-label">Montant a payer</label>
+        <input class="form-control" value="{{ exit_amount|fc }}" disabled>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="method">Methode</label>
+        <select class="form-select mb-3" id="method" name="method" data-payment-method>
+          <option value="CASH">Cash</option>
+          <option value="ORANGE_MONEY">Orange Money</option>
+          <option value="MPESA">M-Pesa</option>
+          <option value="AIRTEL_MONEY">Airtel Money</option>
+          <option value="ILLICOCASH">Illicocash</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3" data-payment-identifier-row hidden>
+      <label class="form-label" for="payment_identifier">Identifiant de transaction</label>
+      <input class="form-control" id="payment_identifier" name="payment_identifier" placeholder="Ex: transaction mobile money">
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Payer et finaliser la sortie</button>
+  </form>
+  {% endif %}
+
+  {% if receipt_payment %}
+  <div class="receipt-action">
+    <a class="btn btn-outline-primary" href="{% url 'web:receipt' receipt_payment.id %}" target="_blank">Imprimer le recu</a>
+  </div>
+  {% endif %}
+</section>
+
+<section class="content-section">
+  <div class="section-title"><h2>Vehicules gares</h2></div>
+  {% if parked_locations %}
+    <div class="item-list">
+      {% for location in parked_locations %}
+      <a class="data-card location-click-card" href="?location={{ location.id }}">
+        <div class="data-card-header">
+          <div>
+            <strong>{{ location.vehicle.plaque }}</strong>
+            <span>{{ location.code }}</span>
+          </div>
+          <span class="status-pill status-parked">GARE</span>
+        </div>
+        <dl class="meta-grid">
+          <div><dt>Parking</dt><dd>{{ location.parking_zone.parking.name|default:"-" }}</dd></div>
+          <div><dt>Emplacement</dt><dd>{{ location.parking_zone.name|default:"-" }}</dd></div>
+          <div><dt>Deposeur</dt><dd>{{ location.nom_deposeur }}</dd></div>
+          <div><dt>Entree</dt><dd>{{ location.heure_entree|date:"d/m/Y H:i" }}</dd></div>
+        </dl>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "web/partials/empty.html" with title="Aucun vehicule gare" text="Les vehicules presents apparaitront ici." %}
+  {% endif %}
+</section>
+
+<section class="content-section">
+  <div class="section-title"><h2>Vehicules sortis</h2></div>
+  {% if exited_locations %}
+    <div class="item-list">
+      {% for location in exited_locations %}
+        {% with payment=payments_by_location|get_item:location.id %}
+        <article class="data-card location-click-card">
+          <a href="?location={{ location.id }}">
+            <div class="data-card-header">
+              <div>
+                <strong>{{ location.vehicle.plaque }}</strong>
+                <span>{{ location.code }}</span>
+              </div>
+              <span class="status-pill status-exited">SORTI</span>
+            </div>
+            <dl class="meta-grid">
+              <div><dt>Sortie</dt><dd>{{ location.heure_sortie|date:"d/m/Y H:i" }}</dd></div>
+              <div><dt>Paiement</dt><dd>{{ payment.amount|fc }}</dd></div>
+              <div><dt>Identifiant</dt><dd>{{ payment.payment_identifier|default:"-" }}</dd></div>
+            </dl>
+          </a>
+          {% if payment %}
+          <div class="card-actions">
+            <a class="btn btn-outline-primary" href="{% url 'web:receipt' payment.id %}" target="_blank">Imprimer recu</a>
+          </div>
+          {% endif %}
+        </article>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "web/partials/empty.html" with title="Aucune sortie" text="Les sorties finalisees apparaitront ici." %}
+  {% endif %}
+</section>
+
+{% include "web/partials/location_modal.html" %}
+{% endblock %}

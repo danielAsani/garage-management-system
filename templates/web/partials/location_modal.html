@@ -1,0 +1,57 @@
+{% if selected_location %}
+<div class="modal fade show" role="dialog" aria-modal="true" style="display:block" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content location-detail-modal">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title fs-5">Detail de la location</h2>
+          <span class="muted-text">{{ selected_location.code }}</span>
+        </div>
+        <a class="btn-close" aria-label="Fermer" href="{{ request.path }}"></a>
+      </div>
+      <div class="modal-body">
+        <div class="location-detail-head">
+          <div>
+            <strong>{{ selected_location.vehicle.plaque }}</strong>
+            <span>{{ selected_location.vehicle.vehicle_type.name|default:"Type inconnu" }} - {{ selected_location.vehicle.marque|default:"-" }}</span>
+          </div>
+          <span class="status-pill status-{{ selected_location.statut|lower }}">
+            {% if selected_location.statut == "PARKED" %}GARE{% else %}{{ selected_location.statut }}{% endif %}
+          </span>
+        </div>
+
+        <dl class="meta-grid location-detail-grid">
+          <div><dt>Parking</dt><dd>{{ selected_location.parking_zone.parking.name|default:"-" }}</dd></div>
+          <div><dt>Emplacement</dt><dd>{{ selected_location.parking_zone.name|default:"-" }}</dd></div>
+          <div><dt>Deposeur</dt><dd>{{ selected_location.nom_deposeur|default:"-" }}</dd></div>
+          <div><dt>Telephone</dt><dd>{{ selected_location.telephone|default:"-" }}</dd></div>
+          <div><dt>Marque</dt><dd>{{ selected_location.vehicle.marque|default:"-" }}</dd></div>
+          <div><dt>Couleur</dt><dd>{{ selected_location.vehicle.couleur|default:"-" }}</dd></div>
+          <div><dt>Entree</dt><dd>{{ selected_location.heure_entree|date:"d/m/Y H:i" }}</dd></div>
+          <div><dt>Sortie</dt><dd>{{ selected_location.heure_sortie|date:"d/m/Y H:i"|default:"-" }}</dd></div>
+        </dl>
+
+        <section class="location-photo-detail">
+          <div class="section-title"><h2>Photos</h2></div>
+          {% if selected_location.vehicle.photos.all %}
+            <div class="location-photo-grid">
+              {% for photo in selected_location.vehicle.photos.all %}
+                <a href="{{ photo.image.url }}" rel="noreferrer" target="_blank">
+                  <img src="{{ photo.image.url }}" alt="Vehicule {{ selected_location.vehicle.plaque }}">
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="muted-text">Aucune photo disponible pour ce vehicule.</p>
+          {% endif %}
+        </section>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-secondary" href="{{ request.path }}">Fermer</a>
+      </div>
+    </div>
+  </div>
+</div>
+<a class="modal-backdrop fade show" href="{{ request.path }}"></a>
+{% endif %}
+
