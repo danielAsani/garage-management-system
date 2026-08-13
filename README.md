@@ -1,6 +1,6 @@
-# Garage Manager
+# PARKY
 
-Application Django pour une gestion de parking avec interface en templates Django et API REST conservee pour les integrations.
+Application Django pour la gestion PARKY avec interface web et API REST.
 
 ## Fonctionnalites
 
@@ -10,7 +10,7 @@ Application Django pour une gestion de parking avec interface en templates Djang
 - Gestion des utilisateurs par l'administrateur
 - CRUD des vehicules et types de vehicules
 - Photos de vehicules via upload multipart
-- Creation des parkings et generation automatique des zones
+- Gestion directe des places avec generation automatique
 - Entree et sortie des vehicules avec controle des emplacements occupes
 - Paiement en francs congolais avec montant calcule automatiquement cote serveur
 - Identifiant obligatoire pour les paiements non cash
@@ -33,7 +33,6 @@ Depuis la racine du projet `PROJETL2`:
 python -m venv env
 .\env\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-copy .env.example .env
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 8000
@@ -48,7 +47,7 @@ API: http://127.0.0.1:8000/api/
 
 ## Configuration
 
-Les variables disponibles sont dans `.env.example`:
+En local, les variables d'environnement utiles sont:
 
 ```env
 DJANGO_SECRET_KEY=change-me
@@ -90,13 +89,12 @@ Authorization: Bearer <access_token>
 | Ressource | ADMIN | AGENT |
 |---|---|---|
 | Utilisateurs | CRUD | Interdit |
-| Profils | CRUD | Interdit |
 | Types de vehicules | CRUD | Lecture |
 | Vehicules | CRUD | Lire, creer, modifier |
 | Photos | CRUD | CRUD |
-| Parkings | CRUD | Lecture |
+| Places | CRUD | Lecture |
 | Zones | CRUD | Lecture |
-| Locations | CRUD | CRUD |
+| Stationnements | CRUD | CRUD |
 | Paiements | CRUD | CRUD |
 
 ## Routes Principales
@@ -109,7 +107,6 @@ GET    /api/accounts/users/
 POST   /api/accounts/users/
 PATCH  /api/accounts/users/{id}/
 DELETE /api/accounts/users/{id}/
-GET    /api/accounts/profiles/
 ```
 
 ### Vehicles
@@ -125,21 +122,18 @@ GET    /api/vehicles/photos/
 POST   /api/vehicles/photos/
 ```
 
-### Parkings
+### Places
 
 ```txt
-GET    /api/parkings/parkings/
-POST   /api/parkings/parkings/
 GET    /api/parkings/zones/
 POST   /api/parkings/zones/
 DELETE /api/parkings/zones/{id}/
 ```
 
-`POST /api/parkings/zones/` genere plusieurs zones automatiquement:
+`POST /api/parkings/zones/` genere plusieurs places automatiquement:
 
 ```json
 {
-  "parking": 1,
   "vehicle_type": 1,
   "quantity": 5
 }
@@ -153,7 +147,7 @@ Moto-AAB
 Moto-AAC
 ```
 
-### Locations
+### Stationnements
 
 ```txt
 GET    /api/locations/locations/
@@ -161,7 +155,7 @@ POST   /api/locations/locations/
 PATCH  /api/locations/locations/{id}/
 ```
 
-Une location `PARKED` empeche:
+Un stationnement `PARKED` empeche:
 
 - de garer deux fois le meme vehicule;
 - d'occuper deux fois la meme zone;

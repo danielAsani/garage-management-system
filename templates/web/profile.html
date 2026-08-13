@@ -1,0 +1,66 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+{% include "web/partials/page_header.html" %}
+
+<section class="mx-auto grid max-w-3xl gap-5">
+  <div class="card bg-base-100">
+    <div class="card-body">
+      <div class="mb-2">
+        <span class="page-kicker">Compte</span>
+        <h2 class="mt-1 text-xl font-bold text-black">Informations personnelles</h2>
+      </div>
+
+      <form class="grid gap-4" method="post" action="{% url 'web:update_profile' %}">
+        {% csrf_token %}
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="form-control">
+            <span class="label"><span class="label-text">Nom d'utilisateur</span></span>
+            <input class="input input-bordered" name="username" value="{{ request.user.username }}" required>
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text">Email</span></span>
+            <input class="input input-bordered" name="email" type="email" value="{{ request.user.email }}">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text">Prenom</span></span>
+            <input class="input input-bordered" name="first_name" value="{{ request.user.first_name }}">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text">Nom</span></span>
+            <input class="input input-bordered" name="last_name" value="{{ request.user.last_name }}">
+          </label>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <span class="page-kicker">Mot de passe</span>
+          <p class="mt-1 text-sm text-base-content/60">Laisse cette section vide si tu ne veux pas changer le mot de passe.</p>
+        </div>
+        <div class="grid gap-3">
+          <label class="form-control">
+            <span class="label"><span class="label-text">Mot de passe actuel</span></span>
+            <input class="input input-bordered" name="current_password" type="password" autocomplete="current-password">
+          </label>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="form-control">
+              <span class="label"><span class="label-text">Nouveau mot de passe</span></span>
+              <input class="input input-bordered" name="new_password" type="password" autocomplete="new-password">
+            </label>
+            <label class="form-control">
+              <span class="label"><span class="label-text">Confirmer</span></span>
+              <input class="input input-bordered" name="confirm_password" type="password" autocomplete="new-password">
+            </label>
+          </div>
+        </div>
+
+        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <a class="btn" href="{% url 'web:dashboard' %}">Retour</a>
+          <button class="btn btn-primary" type="submit">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

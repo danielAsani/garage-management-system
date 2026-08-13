@@ -3,101 +3,128 @@
 {% block content %}
 {% include "web/partials/page_header.html" %}
 
-<section class="form-panel">
-  <div class="section-title">
-    <h2>{% if edit_user %}Modifier l'utilisateur{% else %}Nouvel utilisateur{% endif %}</h2>
-    {% if edit_user %}<a class="text-button" href="{% url 'web:users' %}">Annuler</a>{% endif %}
+<section class="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+  <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <div class="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <span class="badge badge-primary badge-outline mb-3">Acces</span>
+          <h2 class="card-title">{% if edit_user %}Modifier un compte{% else %}Creer un utilisateur{% endif %}</h2>
+        </div>
+        {% if edit_user %}<a class="btn btn-ghost btn-sm" href="{% url 'web:users' %}">Annuler</a>{% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_user">
+        {% if edit_user %}<input type="hidden" name="user_id" value="{{ edit_user.id }}">{% endif %}
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Nom d'utilisateur</span></span>
+            <input class="input input-bordered" name="username" value="{{ edit_user.username|default:'' }}" required>
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Email</span></span>
+            <input class="input input-bordered" name="email" type="email" value="{{ edit_user.email|default:'' }}">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Prenom</span></span>
+            <input class="input input-bordered" name="first_name" value="{{ edit_user.first_name|default:'' }}">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Nom</span></span>
+            <input class="input input-bordered" name="last_name" value="{{ edit_user.last_name|default:'' }}">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Role</span></span>
+            <select class="select select-bordered" name="role">
+              {% for value, label in roles %}
+                <option value="{{ value }}" {% if edit_user_role == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">{% if edit_user %}Nouveau mot de passe{% else %}Mot de passe{% endif %}</span></span>
+            <input class="input input-bordered" name="password" type="password" placeholder="{% if edit_user %}Laisser vide{% endif %}" {% if not edit_user %}required{% endif %}>
+          </label>
+        </div>
+
+        <label class="label mt-3 cursor-pointer justify-start gap-3">
+          <input class="toggle toggle-primary" type="checkbox" name="is_active" {% if not edit_user or edit_user.is_active %}checked{% endif %}>
+          <span class="label-text font-bold">Compte actif</span>
+        </label>
+
+        <button class="btn btn-primary mt-3 w-full" type="submit">{% if edit_user %}Enregistrer{% else %}Creer le compte{% endif %}</button>
+      </form>
+    </div>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="save_user">
-    {% if edit_user %}<input type="hidden" name="user_id" value="{{ edit_user.id }}">{% endif %}
-
-    <div class="row g-2">
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="username">Nom d'utilisateur</label>
-        <input class="form-control" id="username" name="username" value="{{ edit_user.username|default:'' }}" required>
-      </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="email">Email</label>
-        <input class="form-control" id="email" name="email" type="email" value="{{ edit_user.email|default:'' }}">
+  <aside class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <span class="badge badge-primary badge-outline mb-3">Roles</span>
+      <h2 class="card-title">Simple</h2>
+      <div class="grid gap-2">
+        {% for value, label in roles %}
+        <article class="flex justify-between rounded-box border border-base-300 p-3">
+          <span>{{ label }}</span>
+          <strong>{{ value }}</strong>
+        </article>
+        {% endfor %}
       </div>
     </div>
-
-    <div class="row g-2">
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="first_name">Prenom</label>
-        <input class="form-control" id="first_name" name="first_name" value="{{ edit_user.first_name|default:'' }}">
-      </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="last_name">Nom</label>
-        <input class="form-control" id="last_name" name="last_name" value="{{ edit_user.last_name|default:'' }}">
-      </div>
-    </div>
-
-    <div class="row g-2">
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="role">Role</label>
-        <select class="form-select mb-3" id="role" name="role">
-          {% for value, label in roles %}
-            <option value="{{ value }}" {% if edit_user.profile.role == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="password">{% if edit_user %}Nouveau mot de passe{% else %}Mot de passe{% endif %}</label>
-        <input class="form-control" id="password" name="password" type="password" placeholder="{% if edit_user %}Laisser vide pour ne pas changer{% endif %}" {% if not edit_user %}required{% endif %}>
-      </div>
-    </div>
-
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" {% if not edit_user or edit_user.is_active %}checked{% endif %}>
-      <label class="form-check-label" for="is_active">Compte actif</label>
-    </div>
-
-    <button class="btn btn-primary w-100" type="submit">{% if edit_user %}Modifier{% else %}Creer{% endif %}</button>
-  </form>
+  </aside>
 </section>
 
-<section class="content-section">
-  <div class="section-title"><h2>Comptes</h2></div>
-  {% if users %}
-    <div class="item-list">
-      {% for user in users %}
-      <article class="data-card">
-        <div class="data-card-header">
-          <div>
-            <strong>{{ user.username }}</strong>
-            <span>{{ user.email|default:"Aucun email" }}</span>
-          </div>
-          <span class="status-pill {% if user.is_active %}status-paid{% else %}status-cancelled{% endif %}">
-            {% if user.is_active %}ACTIF{% else %}INACTIF{% endif %}
-          </span>
-        </div>
-
-        <dl class="meta-grid">
-          <div><dt>Nom</dt><dd>{{ user.first_name }} {{ user.last_name }}</dd></div>
-          <div><dt>Role</dt><dd>{{ user.profile.role|default:"-" }}</dd></div>
-        </dl>
-
-        <div class="card-actions">
-          <a class="btn btn-outline-primary" href="?edit={{ user.id }}">Modifier</a>
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="toggle_user">
-            <input type="hidden" name="user_id" value="{{ user.id }}">
-            <button class="btn {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit">
-              {% if user.is_active %}Desactiver{% else %}Activer{% endif %}
-            </button>
-          </form>
-        </div>
-      </article>
-      {% endfor %}
+<section class="card border border-base-300 bg-base-100 shadow-sm">
+  <div class="card-body">
+    <span class="badge badge-primary badge-outline mb-3">Equipe</span>
+    <h2 class="card-title">Comptes utilisateurs</h2>
+    {% if users %}
+    <div class="table-scroll">
+      <table class="table">
+        <thead><tr><th>Utilisateur</th><th>Role</th><th>Etat</th><th class="text-right">Actions</th></tr></thead>
+        <tbody>
+          {% for user in users %}
+          <tr class="hover">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="avatar placeholder"><div class="w-10 rounded-full bg-primary text-primary-content"><span>{{ user.username|first|upper }}</span></div></div>
+                <div>
+                  <strong>{{ user.username }}</strong>
+                  <div class="text-xs text-base-content/50">{{ user.email|default:"Aucun email" }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="font-bold">{{ user.role_label|default:"-" }}</td>
+            <td><span class="badge {% if user.is_active %}badge-success{% else %}badge-error{% endif %}">{% if user.is_active %}Actif{% else %}Inactif{% endif %}</span></td>
+            <td>
+              <div class="flex flex-wrap justify-end gap-2">
+                <a class="btn btn-ghost btn-sm" href="?edit={{ user.id }}">Modifier</a>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="toggle_user">
+                  <input type="hidden" name="user_id" value="{{ user.id }}">
+                  <button class="btn btn-ghost btn-sm text-error" type="submit">{% if user.is_active %}Desactiver{% else %}Activer{% endif %}</button>
+                </form>
+                {% if user.id != request.user.id %}
+                <form method="post" data-confirm="ATTENTION: supprimer cet utilisateur est une action definitive. Son compte ne pourra plus se connecter a PARKY. Continuer ?">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_user">
+                  <input type="hidden" name="user_id" value="{{ user.id }}">
+                  <button class="btn btn-ghost btn-sm text-error" type="submit">Supprimer</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  {% else %}
-    {% include "web/partials/empty.html" with title="Aucun utilisateur" text="Les comptes crees apparaitront ici." %}
-  {% endif %}
+    {% else %}
+      {% include "web/partials/empty.html" with title="Aucun utilisateur" text="Les comptes crees apparaitront ici." %}
+    {% endif %}
+  </div>
 </section>
 {% endblock %}
-

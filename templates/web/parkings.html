@@ -3,123 +3,87 @@
 {% block content %}
 {% include "web/partials/page_header.html" %}
 
-{% if is_admin %}
-<div class="row gy-3">
-  <section class="form-panel compact-panel col-12 col-md-4">
-    <div class="section-title"><h2>Nouveau parking</h2></div>
-    <form class="inline-form" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="create_parking">
-      <input class="form-control" name="name" placeholder="Parking principal" required>
-      <button class="btn btn-primary" type="submit">Ajouter</button>
-    </form>
-  </section>
+<section class="hero mb-5 rounded-box border border-base-300 bg-base-100 shadow-sm">
+  <div class="hero-content grid w-full gap-5 p-6 lg:grid-cols-[1fr_auto]">
+    <div>
+      <span class="badge badge-primary badge-outline mb-3">Capacite</span>
+      <h2 class="text-xl font-extrabold sm:text-2xl">{{ available_visible_zones }} places libres</h2>
+      <p class="mt-2 text-base-content/60">{{ occupied_visible_zones }} occupees sur {{ total_visible_zones }} places.</p>
+    </div>
+    <div class="join flex-wrap">
+      <a class="btn join-item {% if selected_type == 'all' %}btn-primary{% endif %}" href="{% url 'web:parkings' %}">Tous</a>
+      {% for type in types %}
+        <a class="btn join-item {% if selected_type == type.id|stringformat:'s' %}btn-primary{% endif %}" href="?type={{ type.id }}">{{ type.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
-  <section class="form-panel col-12 col-md-8">
-    <div class="section-title"><h2>Generer des zones</h2></div>
-    <form method="post">
+{% if is_admin %}
+<section class="mb-5 card border border-base-300 bg-base-100 shadow-sm">
+  <div class="card-body">
+    <span class="badge badge-primary badge-outline mb-3">Generation</span>
+    <h2 class="card-title">Ajouter des places</h2>
+    <form class="grid gap-3 md:grid-cols-[minmax(220px,0.8fr)_160px_auto]" method="post">
       {% csrf_token %}
       <input type="hidden" name="action" value="create_zones">
-      <div class="mb-3">
-        <label class="form-label" for="parking">Parking</label>
-        <select class="form-select" id="parking" name="parking" required>
-          <option value="">Choisir un parking</option>
-          {% for parking in all_parkings %}<option value="{{ parking.id }}">{{ parking.name }}</option>{% endfor %}
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label" for="vehicle_type">Type de vehicule</label>
-        <select class="form-select" id="vehicle_type" name="vehicle_type" required>
-          <option value="">Choisir un type</option>
-          {% for type in types %}<option value="{{ type.id }}">{{ type.name }}</option>{% endfor %}
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label" for="quantity">Quantite</label>
-        <input class="form-control" id="quantity" name="quantity" type="number" min="1" value="1" required>
-      </div>
-      <button class="btn btn-primary w-100" type="submit">Generer</button>
+      <select class="select select-bordered" name="vehicle_type" required>
+        <option value="" disabled selected>Choisir un type</option>
+        {% for type in types %}<option value="{{ type.id }}">{{ type.name }}</option>{% endfor %}
+      </select>
+      <input class="input input-bordered" name="quantity" type="number" min="1" value="1" required>
+      <button class="btn btn-primary" type="submit">Generer</button>
     </form>
-  </section>
-</div>
+  </div>
+</section>
 {% endif %}
 
-<section class="content-section">
-  <div class="section-title"><h2>Liste des parkings</h2></div>
+{% if type_summary %}
+<section class="mb-5 flex flex-wrap gap-2">
+  {% for type_name, total in type_summary %}
+    <span class="badge badge-ghost">{{ type_name }}: {{ total }}</span>
+  {% endfor %}
+</section>
+{% endif %}
 
-  <div class="type-filter-buttons" aria-label="Filtrer les parkings par type de vehicule">
-    <a class="{% if selected_type == 'all' %}active{% endif %}" href="{% url 'web:parkings' %}">Tous</a>
-    {% for type in types %}
-      <a class="{% if selected_type == type.id|stringformat:'s' %}active{% endif %}" href="?type={{ type.id }}">{{ type.name }}</a>
-    {% endfor %}
-  </div>
+<section class="card border border-base-300 bg-base-100 shadow-sm">
+  <div class="card-body">
+    <div class="mb-2">
+      <span class="badge badge-primary badge-outline mb-3">Places</span>
+      <h2 class="card-title">Liste des places</h2>
+    </div>
 
-  {% if parkings %}
-  <div class="parking-overview-list">
-    {% for parking in parkings %}
-    <article class="parking-overview">
-      <div class="parking-overview-header">
-        <div class="parking-title-block">
-          <span class="soft-pill"><i class="fa-solid fa-square-parking"></i> Parking</span>
-          <strong>{{ parking.name }}</strong>
-          <span>{{ parking.total_zones }} zones configurees</span>
-        </div>
-
-        <div class="parking-summary">
-          <span class="status-pill status-exited">{{ parking.available_zones }} libres</span>
-          <span class="status-pill status-parked">{{ parking.occupied_zones }} occupees</span>
-        </div>
-
+    {% if zones %}
+    <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+      {% for zone in zones %}
+      <div class="relative rounded-box border p-4 {% if zone.occupied_location %}border-warning/30 bg-warning/10{% else %}border-success/30 bg-success/10{% endif %}">
+        <strong class="block">{{ zone.name }}</strong>
+        <span class="text-sm text-base-content/55">{{ zone.vehicle_type.name }}</span>
+        <span class="badge mt-3 {% if zone.occupied_location %}badge-warning{% else %}badge-success{% endif %}">
+          {% if zone.occupied_location %}{{ zone.occupied_location.vehicle.plaque }}{% else %}Libre{% endif %}
+        </span>
         {% if is_admin %}
-        <form method="post" data-confirm="Supprimer ce parking ?">
+        <form method="post" data-confirm="AVERTISSEMENT IMPORTANT: tu vas supprimer cette place de parking. Cela diminue la capacite disponible pour ce type de vehicule. Si cette place est occupee ou deja liee a un historique de stationnement, la suppression sera refusee pour proteger les donnees. Confirmer la suppression ?">
           {% csrf_token %}
-          <input type="hidden" name="action" value="delete_parking">
-          <input type="hidden" name="parking_id" value="{{ parking.id }}">
-          <button class="icon-button danger" type="submit" aria-label="Supprimer le parking">
-            <i class="fa-solid fa-trash"></i>
+          <input type="hidden" name="action" value="delete_zone">
+          <input type="hidden" name="zone_id" value="{{ zone.id }}">
+          <button class="btn btn-circle btn-xs absolute right-2 top-2" type="submit" aria-label="Supprimer la place">
+            {% include "web/partials/icon.html" with icon="x" svg_class="h-3 w-3" %}
           </button>
         </form>
         {% endif %}
       </div>
-
-      {% if parking.type_summary %}
-      <div class="parking-type-summary">
-        {% for type_name, total in parking.type_summary %}
-          <span class="soft-pill">{{ type_name }}: {{ total }}</span>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      {% if parking.web_zones %}
-      <div class="parking-zone-board">
-        {% for zone in parking.web_zones %}
-        <div class="parking-zone-tile {% if zone.occupied_location %}occupied{% else %}available{% endif %}">
-          <div>
-            <strong>{{ zone.name }}</strong>
-            <span>{{ zone.vehicle_type.name }}</span>
-          </div>
-          <span class="parking-zone-status">{% if zone.occupied_location %}{{ zone.occupied_location.vehicle.plaque }}{% else %}Libre{% endif %}</span>
-          {% if is_admin %}
-          <form method="post" data-confirm="Supprimer la zone ?">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete_zone">
-            <input type="hidden" name="zone_id" value="{{ zone.id }}">
-            <button type="submit" aria-label="Supprimer la zone" title="Supprimer la zone">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </form>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-        <p class="muted-text">Aucune zone configuree.</p>
-      {% endif %}
-    </article>
-    {% endfor %}
+      {% endfor %}
+    </div>
+    {% if hidden_zone_count %}
+    <div class="mt-4 rounded-box border border-dashed border-base-300 bg-base-200 p-4 text-sm">
+      {{ hidden_zone_count }} places supplementaires masquees pour accelerer l'affichage.
+      <a class="link link-primary font-bold" href="?{% if selected_type != 'all' %}type={{ selected_type }}&{% endif %}show=all">Tout afficher</a>
+    </div>
+    {% endif %}
+    {% else %}
+      {% include "web/partials/empty.html" with title="Aucune place" text="Genere les places pour commencer." %}
+    {% endif %}
   </div>
-  {% else %}
-    {% include "web/partials/empty.html" with title="Aucun parking" text="Les parkings configures apparaitront ici." %}
-  {% endif %}
 </section>
 {% endblock %}

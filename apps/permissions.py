@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 
+from apps.accounts.roles import ADMIN, AGENT, recuperer_role_utilisateur
+
 
 READ_ACTIONS = ["list", "retrieve"]
 WRITE_ACTIONS = ["create", "update", "partial_update"]
@@ -7,32 +9,20 @@ DELETE_ACTIONS = ["destroy"]
 CRUD_ACTIONS = READ_ACTIONS + WRITE_ACTIONS + DELETE_ACTIONS
 
 
-def get_user_role(user):
-    if not user or not user.is_authenticated:
-        return None
-
-    profile = getattr(user, "profile", None)
-
-    if profile is None:
-        return None
-
-    return profile.role
-
-
 class IsAdminRole(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
-        return role == "ADMIN"
+        role = recuperer_role_utilisateur(request.user)
+        return role == ADMIN
 
 
 class CanAccessVehicles(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
+        role = recuperer_role_utilisateur(request.user)
 
-        if role == "ADMIN":
+        if role == ADMIN:
             return True
 
-        if role == "AGENT" and view.action in READ_ACTIONS + WRITE_ACTIONS:
+        if role == AGENT and view.action in READ_ACTIONS + WRITE_ACTIONS:
             return True
 
         return False
@@ -40,12 +30,12 @@ class CanAccessVehicles(BasePermission):
 
 class CanAccessVehicleTypes(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
+        role = recuperer_role_utilisateur(request.user)
 
-        if role == "ADMIN":
+        if role == ADMIN:
             return True
 
-        if role == "AGENT" and view.action in READ_ACTIONS:
+        if role == AGENT and view.action in READ_ACTIONS:
             return True
 
         return False
@@ -53,12 +43,12 @@ class CanAccessVehicleTypes(BasePermission):
 
 class CanAccessVehiclePhotos(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
+        role = recuperer_role_utilisateur(request.user)
 
-        if role == "ADMIN":
+        if role == ADMIN:
             return True
 
-        if role == "AGENT" and view.action in CRUD_ACTIONS:
+        if role == AGENT and view.action in CRUD_ACTIONS:
             return True
 
         return False
@@ -66,12 +56,12 @@ class CanAccessVehiclePhotos(BasePermission):
 
 class CanAccessParkingConfig(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
+        role = recuperer_role_utilisateur(request.user)
 
-        if role == "ADMIN":
+        if role == ADMIN:
             return True
 
-        if role == "AGENT" and view.action in READ_ACTIONS:
+        if role == AGENT and view.action in READ_ACTIONS:
             return True
 
         return False
@@ -79,5 +69,5 @@ class CanAccessParkingConfig(BasePermission):
 
 class CanManageOperations(BasePermission):
     def has_permission(self, request, view):
-        role = get_user_role(request.user)
-        return role in ["ADMIN", "AGENT"]
+        role = recuperer_role_utilisateur(request.user)
+        return role in [ADMIN, AGENT]

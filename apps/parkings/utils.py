@@ -1,7 +1,7 @@
 import string
 
 
-def generate_zone_suffix(index):
+def generer_suffixe_place(index):
     letters = string.ascii_uppercase
 
     first = letters[(index // (26 * 26)) % 26]

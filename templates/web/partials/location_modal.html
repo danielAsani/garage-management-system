@@ -1,57 +1,55 @@
 {% if selected_location %}
-<div class="modal fade show" role="dialog" aria-modal="true" style="display:block" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content location-detail-modal">
-      <div class="modal-header">
-        <div>
-          <h2 class="modal-title fs-5">Detail de la location</h2>
-          <span class="muted-text">{{ selected_location.code }}</span>
-        </div>
-        <a class="btn-close" aria-label="Fermer" href="{{ request.path }}"></a>
+<div class="modal modal-open" role="dialog" aria-modal="true">
+  <div class="modal-box max-w-3xl">
+    <div class="mb-5 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-lg font-extrabold">Detail du stationnement</h2>
+        <span class="text-sm text-base-content/55">{{ selected_location.code }}</span>
       </div>
-      <div class="modal-body">
-        <div class="location-detail-head">
-          <div>
-            <strong>{{ selected_location.vehicle.plaque }}</strong>
-            <span>{{ selected_location.vehicle.vehicle_type.name|default:"Type inconnu" }} - {{ selected_location.vehicle.marque|default:"-" }}</span>
-          </div>
-          <span class="status-pill status-{{ selected_location.statut|lower }}">
-            {% if selected_location.statut == "PARKED" %}GARE{% else %}{{ selected_location.statut }}{% endif %}
-          </span>
-        </div>
+      <a class="btn btn-ghost btn-sm btn-circle" aria-label="Fermer" href="{{ request.path }}">
+        x
+      </a>
+    </div>
 
-        <dl class="meta-grid location-detail-grid">
-          <div><dt>Parking</dt><dd>{{ selected_location.parking_zone.parking.name|default:"-" }}</dd></div>
-          <div><dt>Emplacement</dt><dd>{{ selected_location.parking_zone.name|default:"-" }}</dd></div>
-          <div><dt>Deposeur</dt><dd>{{ selected_location.nom_deposeur|default:"-" }}</dd></div>
-          <div><dt>Telephone</dt><dd>{{ selected_location.telephone|default:"-" }}</dd></div>
-          <div><dt>Marque</dt><dd>{{ selected_location.vehicle.marque|default:"-" }}</dd></div>
-          <div><dt>Couleur</dt><dd>{{ selected_location.vehicle.couleur|default:"-" }}</dd></div>
-          <div><dt>Entree</dt><dd>{{ selected_location.heure_entree|date:"d/m/Y H:i" }}</dd></div>
-          <div><dt>Sortie</dt><dd>{{ selected_location.heure_sortie|date:"d/m/Y H:i"|default:"-" }}</dd></div>
-        </dl>
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-box bg-base-200 p-4">
+      <div>
+        <strong class="block text-xl">{{ selected_location.vehicle.plaque }}</strong>
+        <span class="text-sm text-base-content/60">{{ selected_location.vehicle.vehicle_type.name|default:"Type inconnu" }} - {{ selected_location.vehicle.marque|default:"-" }}</span>
+      </div>
+      <span class="badge badge-lg {% if selected_location.statut == 'PARKED' %}badge-warning{% else %}badge-success{% endif %}">
+        {% if selected_location.statut == "PARKED" %}GARE{% else %}{{ selected_location.statut }}{% endif %}
+      </span>
+    </div>
 
-        <section class="location-photo-detail">
-          <div class="section-title"><h2>Photos</h2></div>
-          {% if selected_location.vehicle.photos.all %}
-            <div class="location-photo-grid">
-              {% for photo in selected_location.vehicle.photos.all %}
-                <a href="{{ photo.image.url }}" rel="noreferrer" target="_blank">
-                  <img src="{{ photo.image.url }}" alt="Vehicule {{ selected_location.vehicle.plaque }}">
-                </a>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="muted-text">Aucune photo disponible pour ce vehicule.</p>
-          {% endif %}
-        </section>
-      </div>
-      <div class="modal-footer">
-        <a class="btn btn-outline-secondary" href="{{ request.path }}">Fermer</a>
-      </div>
+    <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Emplacement</dt><dd class="font-bold">{{ selected_location.parking_zone.name|default:"-" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Deposeur</dt><dd class="font-bold">{{ selected_location.nom_deposeur|default:"-" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Telephone</dt><dd class="font-bold">{{ selected_location.telephone|default:"-" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Marque</dt><dd class="font-bold">{{ selected_location.vehicle.marque|default:"-" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Couleur</dt><dd class="font-bold">{{ selected_location.vehicle.couleur|default:"-" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Entree</dt><dd class="font-bold">{{ selected_location.heure_entree|date:"d/m/Y H:i" }}</dd></div>
+      <div class="rounded-box bg-base-200 p-3"><dt class="text-xs font-bold text-base-content/50">Sortie</dt><dd class="font-bold">{{ selected_location.heure_sortie|date:"d/m/Y H:i"|default:"-" }}</dd></div>
+    </dl>
+
+    <section class="mt-6">
+      <h3 class="mb-3 font-extrabold">Photos</h3>
+      {% if selected_location.vehicle.photos.all %}
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {% for photo in selected_location.vehicle.photos.all %}
+            <a href="{{ photo.image.url }}" rel="noreferrer" target="_blank">
+              <img class="aspect-[4/3] rounded-box object-cover" src="{{ photo.image.url }}" alt="Vehicule {{ selected_location.vehicle.plaque }}">
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-sm text-base-content/55">Aucune photo disponible pour ce vehicule.</p>
+      {% endif %}
+    </section>
+
+    <div class="modal-action">
+      <a class="btn" href="{{ request.path }}">Fermer</a>
     </div>
   </div>
+  <a class="modal-backdrop" href="{{ request.path }}">Fermer</a>
 </div>
-<a class="modal-backdrop fade show" href="{{ request.path }}"></a>
 {% endif %}
-

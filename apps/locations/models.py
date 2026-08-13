@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .utils import generate_code
+from .utils import generer_code
 
 
 class Location(models.Model):
@@ -57,6 +57,15 @@ class Location(models.Model):
     def __str__(self):
         return self.code
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["statut"], name="location_statut_idx"),
+            models.Index(fields=["vehicle", "statut"], name="location_vehicle_statut_idx"),
+            models.Index(fields=["parking_zone", "statut"], name="location_zone_statut_idx"),
+            models.Index(fields=["heure_entree"], name="location_entree_idx"),
+            models.Index(fields=["heure_sortie"], name="location_sortie_idx"),
+        ]
+
     def clean(self):
         super().clean()
 
@@ -94,10 +103,10 @@ class Location(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            code_genere = "LOC" + generate_code()
+            code_genere = "LOC" + generer_code()
 
             while Location.objects.filter(code=code_genere).exclude(pk=self.pk).exists():
-                code_genere = "LOC" + generate_code()
+                code_genere = "LOC" + generer_code()
 
             self.code = code_genere
 

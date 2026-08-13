@@ -17,8 +17,9 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-handler403 = "apps.web.views.error_403"
-handler404 = "apps.web.views.error_404"
-handler500 = "apps.web.views.error_500"
+handler403 = "apps.web.views.erreur_403"
+handler404 = "apps.web.views.erreur_404"
+handler500 = "apps.web.views.erreur_500"

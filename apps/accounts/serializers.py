@@ -1,27 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import UserProfile
+
+from .roles import ROLE_CHOICES, AGENT, definir_role_utilisateur, recuperer_role_utilisateur
 
 User = get_user_model()
 
 
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username", read_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = [
-            "id",
-            "user",
-            "username",
-            "role",
-        ]
-
-
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(
-        choices=UserProfile.Role.choices,
+        choices=ROLE_CHOICES,
         required=False,
     )
     password = serializers.CharField(
@@ -45,8 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        profile = getattr(instance, "profile", None)
-        data["role"] = profile.role if profile else None
+        data["role"] = recuperer_role_utilisateur(instance)
         return data
 
     def validate(self, attrs):
@@ -58,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        role = validated_data.pop("role", UserProfile.Role.AGENT)
+        role = validated_data.pop("role", AGENT)
         password = validated_data.pop("password")
 
         user = User.objects.create_user(
@@ -66,12 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-        profile, _ = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={"role": role},
-        )
-        profile.role = role
-        profile.save()
+        definir_role_utilisateur(user, role)
 
         return user
 
@@ -87,16 +68,8 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
 
-        profile, _ = UserProfile.objects.get_or_create(
-            user=instance,
-            defaults={
-                "role": UserProfile.Role.ADMIN if instance.is_superuser else UserProfile.Role.AGENT
-            },
-        )
-
         if role:
-            profile.role = role
-            profile.save()
+            definir_role_utilisateur(instance, role)
 
         instance.refresh_from_db()
 

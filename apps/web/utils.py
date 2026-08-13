@@ -1,4 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
+from functools import wraps
 from math import ceil
 
 from django.contrib import messages
@@ -6,53 +7,52 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils import timezone
 
-from apps.accounts.models import UserProfile
+from apps.accounts.roles import ADMIN, AGENT, recuperer_role_utilisateur
 
 
 FC_PER_DOLLAR = Decimal("2300")
 
 
-def get_role(user):
-    profile = getattr(user, "profile", None)
-    if profile:
-        return profile.role
-    return UserProfile.Role.ADMIN if getattr(user, "is_superuser", False) else None
+def recuperer_role(user):
+    return recuperer_role_utilisateur(user)
 
 
-def is_admin(user):
-    return get_role(user) == UserProfile.Role.ADMIN
+def est_admin(user):
+    return recuperer_role(user) == ADMIN
 
 
-def is_agent(user):
-    return get_role(user) == UserProfile.Role.AGENT
+def est_agent(user):
+    return recuperer_role(user) == AGENT
 
 
-def admin_required(view_func):
+def administrateur_requis(view_func):
     @login_required
-    def wrapper(request, *args, **kwargs):
-        if not is_admin(request.user):
+    @wraps(view_func)
+    def enveloppe(request, *args, **kwargs):
+        if not est_admin(request.user):
             messages.error(request, "Acces reserve aux administrateurs.")
             return redirect("web:dashboard")
         return view_func(request, *args, **kwargs)
 
-    return wrapper
+    return enveloppe
 
 
-def role_required(*roles):
-    def decorator(view_func):
+def role_requis(*roles):
+    def decorateur(view_func):
         @login_required
-        def wrapper(request, *args, **kwargs):
-            if get_role(request.user) not in roles:
+        @wraps(view_func)
+        def enveloppe(request, *args, **kwargs):
+            if recuperer_role(request.user) not in roles:
                 messages.error(request, "Tu n'as pas les droits pour cette action.")
                 return redirect("web:dashboard")
             return view_func(request, *args, **kwargs)
 
-        return wrapper
+        return enveloppe
 
-    return decorator
+    return decorateur
 
 
-def money(value):
+def formater_fc(value):
     if value in (None, ""):
         return "-"
 
@@ -61,7 +61,7 @@ def money(value):
     return f"{text} FC"
 
 
-def dollars(value):
+def formater_dollars(value):
     if value in (None, ""):
         return "-"
 
@@ -70,20 +70,20 @@ def dollars(value):
     return f"~= {text} $"
 
 
-def billed_minutes(location):
+def minutes_facturees(location):
     end_time = location.heure_sortie or timezone.now()
     duration_seconds = max(0, (end_time - location.heure_entree).total_seconds())
     return max(1, ceil(duration_seconds / 60))
 
 
-def calculate_location_amount(location):
+def calculer_montant_stationnement(location):
     hourly_rate = location.vehicle.vehicle_type.tarif_hours
-    amount = hourly_rate * Decimal(billed_minutes(location)) / Decimal("60")
+    amount = hourly_rate * Decimal(minutes_facturees(location)) / Decimal("60")
     amount = max(amount, Decimal("500.00"))
     return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def add_form_error(request, exc, fallback):
+def ajouter_erreur_formulaire(request, exc, fallback):
     if hasattr(exc, "message_dict"):
         for field, errors in exc.message_dict.items():
             for error in errors:
@@ -91,4 +91,3 @@ def add_form_error(request, exc, fallback):
         return
 
     messages.error(request, str(exc) or fallback)
-

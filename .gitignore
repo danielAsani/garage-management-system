@@ -1,8 +1,10 @@
 # Python / Django
 env/
+node_modules/
 __pycache__/
 **/__pycache__/
 *.pyc
+*.pem
 db.sqlite3
 .env
 media/

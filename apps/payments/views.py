@@ -8,7 +8,7 @@ from apps.locations.models import Location
 from apps.permissions import CanManageOperations
 
 
-def get_limit(request, default=None, maximum=500):
+def recuperer_limite(request, default=None, maximum=500):
     raw_limit = request.query_params.get("limit")
 
     if raw_limit is None:
@@ -38,14 +38,14 @@ class PaymentViewSet(viewsets.ModelViewSet) :
             if status:
                 queryset = queryset.filter(status=status)
 
-            limit = get_limit(self.request)
+            limit = recuperer_limite(self.request)
             if limit:
                 queryset = queryset[:limit]
 
         return queryset
 
-    @action(detail=False, methods=["get"], url_path="summary")
-    def summary(self, request):
+    @action(detail=False, methods=["get"], url_path="summary", url_name="summary")
+    def resume(self, request):
         paid_payments = Payment.objects.filter(status=Payment.Status.PAID)
         recent_payments = self.get_serializer(
             self.queryset[:100],

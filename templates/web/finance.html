@@ -4,70 +4,76 @@
 {% block content %}
 {% include "web/partials/page_header.html" %}
 
-<section class="stats-grid">
-  <div class="stat-card">
-    <span>Total encaisse</span>
-    <strong>{{ total_paid|fc }}</strong>
-    <small class="muted-text">{{ total_paid|usd }}</small>
-    <i class="fa-solid fa-sack-dollar"></i>
-  </div>
-  <div class="stat-card">
-    <span>Paiements payes</span>
-    <strong>{{ paid_count }}</strong>
-    <i class="fa-solid fa-circle-check"></i>
-  </div>
-  <div class="stat-card">
-    <span>Vehicules sortis</span>
-    <strong>{{ exited_count }}</strong>
-    <i class="fa-solid fa-right-from-bracket"></i>
-  </div>
-</section>
-
-<section class="content-section">
-  <div class="section-title"><h2>Rendu par methode</h2></div>
-  {% if by_method %}
-    <div class="finance-method-grid">
-      {% for row in by_method %}
-      <article class="data-card">
-        <span>{{ row.method }}</span>
-        <strong>{{ row.amount|fc }}</strong>
-        <small class="muted-text">{{ row.amount|usd }}</small>
-      </article>
-      {% endfor %}
+<section class="hero mb-5 rounded-box border border-base-300 bg-base-100 shadow-sm">
+  <div class="hero-content grid w-full gap-5 p-6 lg:grid-cols-[1fr_auto]">
+    <div>
+      <span class="badge badge-primary badge-outline mb-3">Encaissements</span>
+      <h2 class="text-2xl font-extrabold">{{ total_paid|fc }}</h2>
+      <p class="mt-2 text-base-content/60">{{ total_paid|usd }} encaisses sur les sorties payees.</p>
     </div>
-  {% else %}
-    {% include "web/partials/empty.html" with title="Aucun paiement paye" text="Les revenus apparaitront apres les sorties payees." %}
-  {% endif %}
-</section>
-
-<section class="content-section">
-  <div class="section-title"><h2>Historique financier</h2></div>
-  {% if recent_payments %}
-    <div class="item-list">
-      {% for payment in recent_payments %}
-      <article class="data-card">
-        <div class="data-card-header">
-          <div>
-            <strong>{{ payment.location.vehicle.plaque }}</strong>
-            <span>{{ payment.location.code }}</span>
-          </div>
-          <span class="status-pill status-{{ payment.status|lower }}">{{ payment.status }}</span>
+    <div class="grid w-full gap-4 sm:grid-cols-2">
+      <article class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-5 shadow-sm">
+        <div class="mb-6 grid h-11 w-11 place-items-center rounded-xl bg-emerald-200 text-emerald-800">
+          {% include "web/partials/icon.html" with icon="check" svg_class="h-5 w-5" %}
         </div>
-        <dl class="meta-grid">
-          <div>
-            <dt>Montant</dt>
-            <dd><strong>{{ payment.amount|fc }}</strong><small class="muted-text d-block">{{ payment.amount|usd }}</small></dd>
-          </div>
-          <div><dt>Methode</dt><dd>{{ payment.method }}</dd></div>
-          <div><dt>Identifiant</dt><dd>{{ payment.payment_identifier|default:"-" }}</dd></div>
-          <div><dt>Paye le</dt><dd>{{ payment.paid_at|date:"d/m/Y H:i"|default:"-" }}</dd></div>
-        </dl>
+        <span class="block text-sm text-[#46628a]">Paiements payes</span>
+        <strong class="mt-2 block text-3xl font-extrabold leading-none text-black">{{ paid_count }}</strong>
       </article>
-      {% endfor %}
+      <article class="rounded-2xl border border-cyan-200 bg-gradient-to-br from-white to-cyan-50 p-5 shadow-sm">
+        <div class="mb-6 grid h-11 w-11 place-items-center rounded-xl bg-cyan-200 text-cyan-800">
+          {% include "web/partials/icon.html" with icon="car" svg_class="h-5 w-5" %}
+        </div>
+        <span class="block text-sm text-[#46628a]">Vehicules sortis</span>
+        <strong class="mt-2 block text-3xl font-extrabold leading-none text-black">{{ exited_count }}</strong>
+      </article>
     </div>
-  {% else %}
-    {% include "web/partials/empty.html" with title="Aucun paiement" text="Les paiements finalises aux sorties apparaitront ici." %}
-  {% endif %}
+  </div>
+</section>
+
+<section class="grid gap-5 xl:grid-cols-[minmax(320px,0.65fr)_minmax(0,1.35fr)]">
+  <aside class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <span class="badge badge-primary badge-outline mb-3">Methodes</span>
+      <h2 class="card-title">Repartition</h2>
+      {% if by_method %}
+      <div class="mt-2 grid gap-2">
+        {% for row in by_method %}
+        <article class="flex justify-between gap-3 rounded-box border border-base-300 p-3">
+          <span>{{ row.method }}</span>
+          <strong>{{ row.amount|fc }}</strong>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+        {% include "web/partials/empty.html" with title="Aucun paiement paye" text="Les revenus apparaitront apres les sorties payees." %}
+      {% endif %}
+    </div>
+  </aside>
+
+  <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <span class="badge badge-primary badge-outline mb-3">Historique</span>
+      <h2 class="card-title">Mouvements recents</h2>
+      {% if recent_payments %}
+      <div class="table-scroll">
+        <table class="table">
+          <thead><tr><th>Plaque</th><th>Montant</th><th>Methode</th><th>Statut</th></tr></thead>
+          <tbody>
+            {% for payment in recent_payments %}
+            <tr class="hover">
+              <td><strong>{{ payment.location.vehicle.plaque }}</strong><div class="text-xs text-base-content/50">{{ payment.location.code }}</div></td>
+              <td class="font-extrabold">{{ payment.amount|fc }}</td>
+              <td>{{ payment.method }}</td>
+              <td><span class="badge {% if payment.status == 'PAID' %}badge-success{% else %}badge-warning{% endif %}">{{ payment.status }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        {% include "web/partials/empty.html" with title="Aucun paiement" text="Les paiements finalises aux sorties apparaitront ici." %}
+      {% endif %}
+    </div>
+  </div>
 </section>
 {% endblock %}
-

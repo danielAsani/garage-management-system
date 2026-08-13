@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="920" viewBox="0 0 1400 920">
+  <defs>
+    <style>
+      .bg { fill: #f4f8fc; }
+      .title { fill: #0f172a; font: 800 34px Segoe UI, Arial, sans-serif; }
+      .subtitle { fill: #64748b; font: 500 16px Segoe UI, Arial, sans-serif; }
+      .box { fill: #fff; stroke: #cbdced; stroke-width: 2; rx: 12; }
+      .box-main { fill: #eaf4ff; stroke: #123d6d; stroke-width: 2.5; rx: 12; }
+      .head { fill: #123d6d; font: 800 18px Segoe UI, Arial, sans-serif; }
+      .attr { fill: #334155; font: 500 14px Segoe UI, Arial, sans-serif; }
+      .small { fill: #64748b; font: 600 13px Segoe UI, Arial, sans-serif; }
+      .link { stroke: #64748b; stroke-width: 2.2; fill: none; }
+      .card { fill: #fef9c3; stroke: #f59e0b; stroke-width: 2; rx: 12; }
+      .note { fill: #92400e; font: 600 14px Segoe UI, Arial, sans-serif; }
+      .tag { fill: #123d6d; font: 800 13px Segoe UI, Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="920"/>
+  <text class="title" x="52" y="64">MCD - PARKY</text>
+  <text class="subtitle" x="52" y="92">Modele conceptuel de donnees de l'application de gestion de parking</text>
+
+  <rect class="box" x="60" y="150" width="250" height="150"/>
+  <text class="head" x="85" y="188">UTILISATEUR</text>
+  <text class="attr" x="85" y="220">username</text>
+  <text class="attr" x="85" y="244">email</text>
+  <text class="attr" x="85" y="268">nom, prenom, actif</text>
+
+  <rect class="box" x="430" y="150" width="230" height="130"/>
+  <text class="head" x="455" y="188">ROLE</text>
+  <text class="attr" x="455" y="220">nom: ADMIN ou AGENT</text>
+  <text class="attr" x="455" y="244">libelle</text>
+
+  <rect class="box" x="60" y="430" width="260" height="160"/>
+  <text class="head" x="85" y="468">TYPE_VEHICULE</text>
+  <text class="attr" x="85" y="500">nom unique</text>
+  <text class="attr" x="85" y="524">tarif horaire</text>
+  <text class="attr" x="85" y="548">dates creation/modification</text>
+
+  <rect class="box-main" x="440" y="405" width="250" height="190"/>
+  <text class="head" x="465" y="443">VEHICULE</text>
+  <text class="attr" x="465" y="475">plaque unique</text>
+  <text class="attr" x="465" y="499">marque</text>
+  <text class="attr" x="465" y="523">couleur</text>
+  <text class="attr" x="465" y="547">dates creation/modification</text>
+
+  <rect class="box" x="820" y="405" width="230" height="150"/>
+  <text class="head" x="845" y="443">PHOTO_VEHICULE</text>
+  <text class="attr" x="845" y="475">image</text>
+  <text class="attr" x="845" y="499">date modification</text>
+
+  <rect class="box" x="60" y="690" width="260" height="140"/>
+  <text class="head" x="85" y="728">PLACE_PARKING</text>
+  <text class="attr" x="85" y="760">nom unique</text>
+  <text class="attr" x="85" y="784">type vehicule accepte</text>
+
+  <rect class="box-main" x="520" y="670" width="290" height="190"/>
+  <text class="head" x="545" y="708">STATIONNEMENT</text>
+  <text class="attr" x="545" y="740">code jeton unique</text>
+  <text class="attr" x="545" y="764">deposant, telephone</text>
+  <text class="attr" x="545" y="788">heure entree, heure sortie</text>
+  <text class="attr" x="545" y="812">statut: gare/sorti/annule</text>
+
+  <rect class="box" x="980" y="670" width="280" height="190"/>
+  <text class="head" x="1005" y="708">PAIEMENT</text>
+  <text class="attr" x="1005" y="740">montant</text>
+  <text class="attr" x="1005" y="764">methode: cash/mobile money</text>
+  <text class="attr" x="1005" y="788">reference paiement</text>
+  <text class="attr" x="1005" y="812">statut, date paiement</text>
+
+  <line class="link" x1="310" y1="214" x2="430" y2="214"/>
+  <text class="tag" x="332" y="202">1 role</text>
+  <text class="tag" x="377" y="235">0..N users</text>
+
+  <line class="link" x1="320" y1="496" x2="440" y2="496"/>
+  <text class="tag" x="337" y="482">1</text>
+  <text class="tag" x="398" y="482">0..N</text>
+
+  <path class="link" d="M 320 552 C 365 630, 250 650, 190 690"/>
+  <text class="tag" x="238" y="642">1 type</text>
+  <text class="tag" x="112" y="670">0..N places</text>
+
+  <line class="link" x1="690" y1="480" x2="820" y2="480"/>
+  <text class="tag" x="712" y="466">1</text>
+  <text class="tag" x="774" y="466">0..N</text>
+
+  <path class="link" d="M 565 595 L 630 670"/>
+  <text class="tag" x="578" y="628">1 vehicule</text>
+  <text class="tag" x="642" y="650">0..N stationnements</text>
+
+  <path class="link" d="M 320 760 L 520 760"/>
+  <text class="tag" x="352" y="746">1 place</text>
+  <text class="tag" x="438" y="746">0..N historiques</text>
+
+  <line class="link" x1="810" y1="765" x2="980" y2="765"/>
+  <text class="tag" x="838" y="750">1 stationnement</text>
+  <text class="tag" x="848" y="787">0..1 paiement</text>
+
+  <rect class="card" x="850" y="135" width="460" height="175"/>
+  <text class="note" x="875" y="172">Regles metier principales</text>
+  <text class="attr" x="875" y="205">- Un vehicule gare ne peut pas avoir deux stationnements actifs.</text>
+  <text class="attr" x="875" y="232">- Une place ne peut pas etre occupee deux fois en meme temps.</text>
+  <text class="attr" x="875" y="259">- La place attribuee doit accepter le type du vehicule.</text>
+  <text class="attr" x="875" y="286">- Le code du stationnement sert de jeton client, sans QR.</text>
+</svg>

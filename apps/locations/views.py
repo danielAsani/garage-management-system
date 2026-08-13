@@ -5,7 +5,7 @@ from .serializers import LocationSerializer
 from apps.permissions import CanManageOperations
 
 
-def get_limit(request, default=None, maximum=500):
+def recuperer_limite(request, default=None, maximum=500):
     raw_limit = request.query_params.get("limit")
 
     if raw_limit is None:
@@ -27,7 +27,6 @@ class LocationViewSet(viewsets.ModelViewSet) :
         "vehicle",
         "vehicle__vehicle_type",
         "parking_zone",
-        "parking_zone__parking",
     ).order_by("-heure_entree")
     serializer_class = LocationSerializer
     permission_classes = [CanManageOperations]
@@ -46,7 +45,7 @@ class LocationViewSet(viewsets.ModelViewSet) :
                     Q(code__icontains=search) | Q(vehicle__plaque__icontains=search)
                 )
 
-            limit = get_limit(self.request)
+            limit = recuperer_limite(self.request)
             if limit:
                 queryset = queryset[:limit]
 

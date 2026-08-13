@@ -70,7 +70,14 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.location.code} - {self.amount} - {self.get_status_display()}"
 
-    def calculate_amount(self):
+    class Meta:
+        indexes = [
+            models.Index(fields=["status"], name="payment_status_idx"),
+            models.Index(fields=["created_at"], name="payment_created_idx"),
+            models.Index(fields=["paid_at"], name="payment_paid_idx"),
+        ]
+
+    def calculer_montant(self):
         location = self.location
         vehicle_type = location.vehicle.vehicle_type
         hourly_rate = vehicle_type.tarif_hours
@@ -97,7 +104,7 @@ class Payment(models.Model):
 
     def save(self, *args, **kwargs):
         if self.location_id:
-            self.amount = self.calculate_amount()
+            self.amount = self.calculer_montant()
 
         if self.status == self.Status.PAID and self.paid_at is None:
             self.paid_at = timezone.now()

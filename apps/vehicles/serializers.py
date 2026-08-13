@@ -27,6 +27,17 @@ class VehicleTypeSerializer(serializers.ModelSerializer):
 
 
 class VehiclePhotoSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        vehicle = attrs.get("vehicle") or getattr(self.instance, "vehicle", None)
+        if vehicle:
+            queryset = VehiclePhoto.objects.filter(vehicle=vehicle)
+            if self.instance:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.count() >= 4:
+                raise serializers.ValidationError("Un vehicule ne peut pas avoir plus de 4 photos.")
+        return attrs
+
     class Meta:
         model = VehiclePhoto
         fields = "__all__"

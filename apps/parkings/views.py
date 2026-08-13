@@ -1,25 +1,22 @@
 from rest_framework import viewsets
-from .models import Parking, ParkingZone
-from .serializers import ParkingSerializer, ParkingZoneSerializer
+from .models import ParkingZone
+from .serializers import ParkingZoneSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from .utils import generate_zone_suffix
+from .utils import generer_suffixe_place
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from apps.vehicles.models import VehicleType
 from apps.permissions import CanAccessParkingConfig
 
-class ParkingViewSet(viewsets.ModelViewSet) :
-    queryset = Parking.objects.all().order_by("name")
-    serializer_class = ParkingSerializer
-    permission_classes = [CanAccessParkingConfig]
-
 class ParkingZoneViewSet(viewsets.ModelViewSet) : 
-    queryset = ParkingZone.objects.select_related("parking", "vehicle_type").order_by("parking__name", "name")
     serializer_class = ParkingZoneSerializer
     permission_classes = [CanAccessParkingConfig]
+
+    def get_queryset(self):
+        return ParkingZone.objects.select_related("vehicle_type").order_by("name")
+
     def create(self, request, *args, **kwargs) : 
-        parking_id = request.data.get("parking")
         vehicle_type_id = request.data.get("vehicle_type")
         quantity = request.data.get("quantity")
 
@@ -35,7 +32,6 @@ class ParkingZoneViewSet(viewsets.ModelViewSet) :
                 {"quantity": "La quantite doit etre superieure a 0."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        parking = get_object_or_404(Parking, id=parking_id)
         vehicle_type = get_object_or_404(VehicleType, id=vehicle_type_id)
         created_zones = []
         index = 0
@@ -49,15 +45,14 @@ class ParkingZoneViewSet(viewsets.ModelViewSet) :
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                suffix = generate_zone_suffix(index)
+                suffix = generer_suffixe_place(index)
                 name = f"{vehicle_type.name}-{suffix}"
                 index += 1
 
-                if ParkingZone.objects.filter(parking=parking, name=name).exists():
+                if ParkingZone.objects.filter(name=name).exists():
                     continue
 
                 zone = ParkingZone.objects.create(
-                    parking=parking,
                     vehicle_type=vehicle_type,
                     name=name,
                 )

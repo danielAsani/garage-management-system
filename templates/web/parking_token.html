@@ -1,0 +1,139 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jeton {{ location.code }}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #f4f7fb;
+      color: #0f172a;
+      font-family: Segoe UI, Arial, sans-serif;
+      margin: 0;
+      padding: 18px;
+    }
+    .token {
+      background: #fff;
+      border: 1px solid #dbe5f0;
+      border-radius: 8px;
+      margin: 0 auto;
+      max-width: 360px;
+      padding: 18px;
+    }
+    .brand {
+      align-items: center;
+      border-bottom: 1px solid #e5edf6;
+      display: flex;
+      gap: 10px;
+      padding-bottom: 14px;
+    }
+    .brand img {
+      height: 42px;
+      object-fit: contain;
+      width: 42px;
+    }
+    .brand strong {
+      color: #000;
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .brand span {
+      color: #64748b;
+      display: block;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .code {
+      background: #e8f3ff;
+      border: 1px solid #bad8f7;
+      border-radius: 8px;
+      color: #123d6d;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin: 18px 0;
+      padding: 16px 10px;
+      text-align: center;
+    }
+    .row {
+      border-top: 1px solid #eef3f8;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 0;
+    }
+    .row span:first-child {
+      color: #64748b;
+    }
+    .row span:last-child {
+      color: #000;
+      font-weight: 700;
+      text-align: right;
+    }
+    .hint {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 14px;
+      text-align: center;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+    .actions a,
+    .actions button {
+      background: #123d6d;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 14px;
+      text-decoration: none;
+    }
+    .actions a {
+      background: #fff;
+      border: 1px solid #dbe5f0;
+      color: #123d6d;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .token { border: 0; max-width: none; width: 76mm; }
+      .actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="token">
+    <section class="brand">
+      <img src="{% static 'web/logo.svg' %}" alt="PARKY">
+      <div>
+        <strong>PARKY</strong>
+        <span>Jeton de stationnement</span>
+      </div>
+    </section>
+
+    <div class="code">{{ location.code }}</div>
+
+    <div class="row"><span>Plaque</span><span>{{ location.vehicle.plaque }}</span></div>
+    <div class="row"><span>Type</span><span>{{ location.vehicle.vehicle_type.name|default:"-" }}</span></div>
+    <div class="row"><span>Place</span><span>{{ location.parking_zone.name|default:"-" }}</span></div>
+    <div class="row"><span>Entree</span><span>{{ location.heure_entree|date:"d/m/Y H:i" }}</span></div>
+    <div class="row"><span>Deposant</span><span>{{ location.nom_deposeur|default:"-" }}</span></div>
+
+    <p class="hint">Ce jeton identifie le stationnement. Il ne valide aucun paiement.</p>
+
+    <div class="actions">
+      <button type="button" onclick="window.print()">Imprimer</button>
+      <a href="{% url 'web:entry' %}">Nouvelle entree</a>
+    </div>
+  </main>
+</body>
+</html>

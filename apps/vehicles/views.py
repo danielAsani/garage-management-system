@@ -4,7 +4,7 @@ from .models import Vehicle, VehiclePhoto, VehicleType
 from apps.permissions import CanAccessVehiclePhotos, CanAccessVehicles, CanAccessVehicleTypes
 
 
-def get_limit(request, default=None, maximum=100):
+def recuperer_limite(request, default=None, maximum=100):
     raw_limit = request.query_params.get("limit")
 
     if raw_limit is None:
@@ -45,7 +45,7 @@ class VehiclePhotoViewSet(viewsets.ModelViewSet) :
             if vehicle:
                 queryset = queryset.filter(vehicle_id=vehicle)
 
-            limit = get_limit(self.request)
+            limit = recuperer_limite(self.request)
             if limit:
                 queryset = queryset[:limit]
 

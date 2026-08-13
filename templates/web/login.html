@@ -1,54 +1,40 @@
 {% load static %}
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="winter">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Connexion - Garage Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <title>Connexion - PARKY</title>
+    <link href="{% static 'web/css/app.css' %}" rel="stylesheet">
     <link href="{% static 'web/favicon.svg' %}" rel="icon" type="image/svg+xml">
-    <link href="{% static 'web/css/global.css' %}" rel="stylesheet">
   </head>
-  <body>
-    <div class="login-screen">
-      <section class="login-hero">
-        <div class="login-brand-block">
-          <span class="brand-mark"><i class="fa-solid fa-square-parking"></i></span>
-          <div>
-            <strong>Garage Manager</strong>
-            <span>Parking, paiements et operations</span>
-          </div>
+  <body class="login-shell min-h-screen" style="font-family: 'Segoe UI', Arial, ui-sans-serif, system-ui, sans-serif;">
+    <main class="grid min-h-screen place-items-center px-4 py-10">
+      <section class="w-full max-w-sm">
+        <div class="mb-7 text-center">
+          <img class="login-logo mx-auto h-16 w-16 object-contain p-2" src="{% static 'web/logo.svg' %}" alt="PARKY">
+          <h1 class="mt-4 text-2xl font-bold text-black">PARKY</h1>
+          <p class="mt-1 text-sm text-base-content/60">Connexion</p>
         </div>
 
-        <div class="login-copy">
-          <span class="soft-pill">Version 1.0</span>
-          <h1>Gestion rapide d'un parking moderne.</h1>
-          <p>Suivez les entrees, sorties, places, photos et paiements depuis une interface simple pour agents et administrateurs.</p>
+        <div class="login-card p-5 sm:p-6">
+
+          {% include "web/partials/messages.html" %}
+
+          <form class="grid gap-4" method="post">
+            {% csrf_token %}
+            <label class="form-control">
+              <span class="label"><span class="label-text">Nom d'utilisateur</span></span>
+              <input class="input input-bordered bg-white" name="username" autocomplete="username" required autofocus>
+            </label>
+            <label class="form-control">
+              <span class="label"><span class="label-text">Mot de passe</span></span>
+              <input class="input input-bordered bg-white" name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <button class="btn btn-primary mt-1 w-full" type="submit">Connexion</button>
+          </form>
         </div>
       </section>
-
-      <section class="login-panel">
-        <div class="login-panel-header">
-          <h2>Connexion</h2>
-          <p>Accede a ton espace de travail.</p>
-        </div>
-
-        {% include "web/partials/messages.html" %}
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label" for="username">Nom d'utilisateur</label>
-            <input class="form-control" id="username" name="username" autocomplete="username" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="password">Mot de passe</label>
-            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
-          </div>
-          <button class="btn btn-primary w-100 btn-lg" type="submit">Se connecter</button>
-        </form>
-      </section>
-    </div>
+    </main>
   </body>
 </html>

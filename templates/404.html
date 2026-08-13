@@ -1,26 +1,28 @@
 {% load static %}
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="winter">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Page introuvable - Garage Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <title>Page introuvable - PARKY</title>
+    <link href="{% static 'web/css/app.css' %}" rel="stylesheet">
     <link href="{% static 'web/favicon.svg' %}" rel="icon" type="image/svg+xml">
-    <link href="{% static 'web/css/global.css' %}" rel="stylesheet">
   </head>
-  <body>
-    <main class="login-screen">
-      <section class="login-panel">
-        <div class="login-panel-header">
-          <h2>Page introuvable</h2>
-          <p>La page demandee n'existe pas ou a ete deplacee.</p>
+  <body class="error-page-shell">
+    <main class="error-page">
+      <section class="error-panel">
+        <div class="error-brand">
+          <img src="{% static 'web/logo.svg' %}" alt="PARKY">
+          <div>
+            <strong>PARKY</strong>
+            <span>Gestion de parking</span>
+          </div>
         </div>
-        <a class="btn btn-primary w-100" href="{% url 'web:dashboard' %}">Retour a l'accueil</a>
+        <span class="error-code">404</span>
+        <h1>Page introuvable</h1>
+        <p>La page demandee n'existe pas ou a ete deplacee.</p>
+        <a class="btn btn-primary" href="{% url 'web:dashboard' %}">Retour a l'accueil</a>
       </section>
     </main>
   </body>
 </html>
-

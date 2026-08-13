@@ -1,8 +1,36 @@
 {% if messages %}
+<section class="message-stack" aria-label="Messages de l'application">
   {% for message in messages %}
-    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" role="alert">
-      {{ message }}
-    </div>
+    <article class="app-message app-message-{{ message.tags|default:'info' }}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}" data-app-message>
+      <div class="app-message-icon" aria-hidden="true">
+        {% if message.tags == "success" %}
+          {% include "web/partials/icon.html" with icon="check" svg_class="h-4 w-4" %}
+        {% elif message.tags == "warning" %}
+          {% include "web/partials/icon.html" with icon="alert" svg_class="h-4 w-4" %}
+        {% elif message.tags == "error" %}
+          {% include "web/partials/icon.html" with icon="alert" svg_class="h-4 w-4" %}
+        {% else %}
+          {% include "web/partials/icon.html" with icon="info" svg_class="h-4 w-4" %}
+        {% endif %}
+      </div>
+      <div class="min-w-0 flex-1">
+        <strong class="app-message-title">
+          {% if message.tags == "success" %}
+            Operation reussie
+          {% elif message.tags == "warning" %}
+            Attention
+          {% elif message.tags == "error" %}
+            Action impossible
+          {% else %}
+            Information
+          {% endif %}
+        </strong>
+        <p class="app-message-text">{{ message }}</p>
+      </div>
+      <button class="app-message-close" type="button" aria-label="Fermer le message" data-app-message-close>
+        {% include "web/partials/icon.html" with icon="x" svg_class="h-4 w-4" %}
+      </button>
+    </article>
   {% endfor %}
+</section>
 {% endif %}
-

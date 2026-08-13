@@ -1,82 +1,94 @@
 {% load static %}
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="winter">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ page_title|default:"Garage Manager" }} - Garage Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <title>{{ page_title|default:"PARKY" }} - PARKY</title>
+    <link href="{% static 'web/css/app.css' %}" rel="stylesheet">
     <link href="{% static 'web/favicon.svg' %}" rel="icon" type="image/svg+xml">
-    <link href="{% static 'web/css/global.css' %}" rel="stylesheet">
   </head>
-  <body>
-    <div class="sb-nav-fixed app-shell">
-      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-        <a class="navbar-brand ps-3" href="{% url 'web:dashboard' %}">Garage Manager</a>
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" type="button" aria-label="Basculer le menu">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="ms-auto me-3 topbar-user">
-          <span>{{ request.user.username }}</span>
-          <small>{% if is_admin %}Administrateur{% else %}Agent{% endif %}</small>
-        </div>
-        <a class="btn btn-outline-light me-3" href="{% url 'web:logout' %}">
-          <i class="fa-solid fa-right-from-bracket me-1"></i>
-          <span class="d-none d-sm-inline">Sortir</span>
-        </a>
-      </nav>
+  <body class="app-surface h-screen text-base-content" style="font-family: 'Segoe UI', Arial, ui-sans-serif, system-ui, sans-serif;">
+    <div class="drawer h-screen overflow-hidden lg:drawer-open">
+      <input id="app-drawer" type="checkbox" class="drawer-toggle">
 
-      <div id="layoutSidenav">
-        <div id="layoutSidenav_nav">
-          <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-            <div class="sb-sidenav-menu">
-              <div class="nav">
-                <div class="sb-sidenav-menu-heading">Core</div>
-                {% include "web/partials/nav_group.html" with group="Core" %}
-                <div class="sb-sidenav-menu-heading">Operations</div>
-                {% include "web/partials/nav_group.html" with group="Operations" %}
-                <div class="sb-sidenav-menu-heading">Configuration</div>
-                {% include "web/partials/nav_group.html" with group="Configuration" %}
-              </div>
-            </div>
-            <div class="sb-sidenav-footer">
-              <div class="small">Connecte en tant que:</div>
-              {{ request.user.username|default:"Utilisateur" }}
-            </div>
-          </nav>
-        </div>
+      <div class="drawer-content flex h-screen min-h-0 flex-col overflow-hidden">
+        <label for="app-drawer" class="mobile-menu-fab btn btn-primary btn-square lg:hidden" aria-label="Ouvrir la navigation">
+          {% include "web/partials/icon.html" with icon="menu" svg_class="h-5 w-5" %}
+        </label>
 
-        <div id="layoutSidenav_content">
-          <main class="app-main">
-            <div class="container-fluid px-4">
-              {% include "web/partials/messages.html" %}
-              {% block content %}{% endblock %}
-            </div>
-          </main>
-          <footer class="py-4 bg-light mt-auto app-footer">
-            <div class="container-fluid px-4">
-              <div class="d-flex align-items-center justify-content-between small">
-                <div class="text-muted">Garage Manager</div>
-                <div>{% if is_admin %}Espace administrateur{% else %}Espace agent{% endif %}</div>
-              </div>
-            </div>
-          </footer>
-        </div>
+        <main class="app-main-scroll mx-auto w-full max-w-7xl flex-1 overflow-y-auto p-4 pb-28 sm:p-6 lg:p-7">
+          {% include "web/partials/messages.html" %}
+          {% block content %}{% endblock %}
+        </main>
+
+        <nav class="mobile-bottom-nav lg:hidden" aria-label="Navigation mobile">
+          {% for link in nav_links %}
+            {% if not link.admin_only or is_admin %}
+            <a class="app-nav-link {% if active_page in link.url_name %}is-active{% endif %}" href="{% url link.url_name %}">
+              <span class="app-nav-icon grid h-6 w-6 place-items-center rounded-md">
+                {% include "web/partials/icon.html" with icon=link.icon_name svg_class="h-3.5 w-3.5" %}
+              </span>
+              <span class="text-[0.72rem] leading-tight">{{ link.label }}</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </nav>
       </div>
 
-      <nav class="mobile-nav">
-        {% for link in nav_links %}
-          {% if not link.admin_only or is_admin %}
-          <a class="{% if active_page in link.url_name %}active{% endif %}" href="{% url link.url_name %}">
-            <i class="fa-solid {{ link.icon }}"></i>
-            <span>{{ link.label }}</span>
+      <div class="drawer-side z-40">
+        <label for="app-drawer" aria-label="Fermer la navigation" class="drawer-overlay"></label>
+        <aside class="app-sidebar flex h-screen min-h-0 w-64 flex-col overflow-y-auto border-r p-4">
+          <a class="mb-7 flex items-center gap-3 px-1" href="{% url 'web:dashboard' %}">
+            <img class="app-brand-mark h-11 w-11 object-contain p-1" src="{% static 'web/logo.svg' %}" alt="" aria-hidden="true">
+            <div>
+              <strong class="block text-lg font-semibold">PARKY</strong>
+              <span class="text-xs opacity-70">Gestion de parking</span>
+            </div>
           </a>
-          {% endif %}
-        {% endfor %}
-      </nav>
+
+          <ul class="menu flex-1 gap-1.5 p-0">
+            {% for link in nav_links %}
+              {% if not link.admin_only or is_admin %}
+              <li>
+                <a class="app-nav-link font-normal {% if active_page in link.url_name %}is-active{% endif %}" href="{% url link.url_name %}">
+                  <span class="app-nav-icon grid h-6 w-6 place-items-center rounded-md">
+                    {% include "web/partials/icon.html" with icon=link.icon_name svg_class="h-4 w-4" %}
+                  </span>
+                  {{ link.label }}
+                </a>
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+
+          <div class="app-sidebar-footer relative rounded-box p-3" data-account-menu="sidebar-account">
+            <button class="flex w-full items-center gap-3 text-left" type="button" data-account-trigger aria-expanded="false" aria-haspopup="dialog">
+              <span class="avatar placeholder">
+                <span class="w-9 rounded-full bg-white/15 text-white">{{ request.user.username|first|upper }}</span>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-semibold">{{ request.user.username|default:"Utilisateur" }}</span>
+                <span class="block text-xs opacity-70">{% if is_admin %}Administrateur{% else %}Agent{% endif %}</span>
+              </span>
+              {% include "web/partials/icon.html" with icon="chevron-down" svg_class="h-4 w-4 shrink-0" %}
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
+
+    <div class="account-popover-sidebar hidden" data-account-popover="sidebar-account" hidden>
+      <div class="account-popover-mini">
+        <a class="account-popover-action account-popover-edit" href="{% url 'web:profile' %}" aria-label="Modifier le compte" title="Modifier le compte">
+          {% include "web/partials/icon.html" with icon="edit" svg_class="h-4 w-4" %}
+        </a>
+        <a class="account-popover-action account-popover-danger" href="{% url 'web:logout' %}" aria-label="Deconnexion" title="Deconnexion">
+          {% include "web/partials/icon.html" with icon="power" svg_class="h-4 w-4" %}
+        </a>
+      </div>
+    </div>
+
     <script src="{% static 'web/js/app.js' %}"></script>
     {% block scripts %}{% endblock %}
   </body>

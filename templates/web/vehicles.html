@@ -4,142 +4,205 @@
 {% block content %}
 {% include "web/partials/page_header.html" %}
 
-{% if can_write_vehicle %}
-<section class="form-panel">
-  <div class="section-title">
-    <h2>{% if edit_vehicle %}Modifier le vehicule{% else %}Nouveau vehicule{% endif %}</h2>
-    {% if edit_vehicle %}<a class="text-button" href="{% url 'web:vehicles' %}">Annuler</a>{% endif %}
-  </div>
-
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="save_vehicle">
-    {% if edit_vehicle %}<input type="hidden" name="vehicle_id" value="{{ edit_vehicle.id }}">{% endif %}
-
-    <div class="mb-3">
-      <label class="form-label" for="plaque">Plaque</label>
-      <input class="form-control" id="plaque" name="plaque" value="{{ edit_vehicle.plaque|default:'' }}" placeholder="Ex: CGO-1234" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="vehicle_type">Type de vehicule</label>
-      <select class="form-select" id="vehicle_type" name="vehicle_type" required>
-        <option value="">Choisir un type</option>
-        {% for type in types %}
-          <option value="{{ type.id }}" {% if edit_vehicle.vehicle_type_id == type.id %}selected{% endif %}>
-            {{ type.name }} - {{ type.tarif_hours|fc }}/h
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="row g-2">
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="marque">Marque</label>
-        <input class="form-control" id="marque" name="marque" value="{{ edit_vehicle.marque|default:'' }}" placeholder="Toyota, Honda...">
+<section class="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+  {% if can_write_vehicle %}
+  <div class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <div class="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <span class="badge badge-primary badge-outline mb-3">Inventaire</span>
+          <h2 class="card-title">{% if edit_vehicle %}Modifier le vehicule{% else %}Ajouter un vehicule{% endif %}</h2>
+        </div>
+        {% if edit_vehicle %}<a class="btn btn-ghost btn-sm" href="{% url 'web:vehicles' %}">Annuler</a>{% endif %}
       </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label" for="couleur">Couleur</label>
-        <input class="form-control" id="couleur" name="couleur" value="{{ edit_vehicle.couleur|default:'' }}" placeholder="Noir, blanc...">
-      </div>
-    </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="photos">Photos du vehicule</label>
-      <input class="form-control" id="photos" name="photos" type="file" accept="image/*" multiple>
-      <small class="form-text">Optionnel. Tu peux joindre plusieurs photos avant d'enregistrer.</small>
-    </div>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_vehicle">
+        {% if edit_vehicle %}<input type="hidden" name="vehicle_id" value="{{ edit_vehicle.id }}">{% endif %}
 
-    <button class="btn btn-primary w-100" type="submit">{% if edit_vehicle %}Modifier{% else %}Enregistrer{% endif %}</button>
-  </form>
-</section>
-{% endif %}
-
-{% if is_admin %}
-<section class="form-panel compact-panel">
-  <div class="section-title">
-    <h2>{% if edit_type %}Modifier le tarif{% else %}Types de vehicules{% endif %}</h2>
-    {% if edit_type %}<a class="text-button" href="{% url 'web:vehicles' %}">Annuler</a>{% endif %}
-  </div>
-  <form class="inline-form" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="save_type">
-    {% if edit_type %}<input type="hidden" name="type_id" value="{{ edit_type.id }}">{% endif %}
-    <input class="form-control" name="name" value="{{ edit_type.name|default:'' }}" placeholder="Moto" required>
-    <input class="form-control" name="tarif_hours" type="number" min="0" step="0.01" value="{{ edit_type.tarif_hours|default:'' }}" placeholder="Tarif/h" required>
-    <button class="btn btn-primary" type="submit">{% if edit_type %}Modifier{% else %}Ajouter{% endif %}</button>
-  </form>
-
-  {% if types %}
-  <div class="type-rate-list">
-    {% for type in types %}
-    <article class="type-rate-item">
-      <div>
-        <strong>{{ type.name }}</strong>
-        <span>{{ type.tarif_hours|fc }}/h</span>
-      </div>
-      <a class="btn btn-outline-primary" href="?edit_type={{ type.id }}">Modifier</a>
-    </article>
-    {% endfor %}
-  </div>
-  {% endif %}
-</section>
-{% endif %}
-
-<section class="content-section">
-  <div class="section-title"><h2>Liste des vehicules</h2></div>
-
-  {% if vehicles %}
-    <div class="item-grid">
-      {% for vehicle in vehicles %}
-      <article class="vehicle-card">
-        <div class="vehicle-card-main">
-          <div>
-            <strong>{{ vehicle.plaque }}</strong>
-            <span>{{ vehicle.vehicle_type.name }}</span>
-          </div>
-          <span class="soft-pill">{{ vehicle.couleur|default:"Couleur -" }}</span>
+        <div class="grid gap-3 md:grid-cols-2">
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Plaque</span></span>
+            <input class="input input-bordered input-lg font-extrabold uppercase" name="plaque" value="{{ edit_vehicle.plaque|default:'' }}" placeholder="CGO-1234" required>
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Type</span></span>
+            <select class="select select-bordered" name="vehicle_type" required>
+              <option value="" disabled {% if not edit_vehicle %}selected{% endif %}>Choisir un type</option>
+              {% for type in types %}
+                <option value="{{ type.id }}" {% if edit_vehicle.vehicle_type_id == type.id %}selected{% endif %}>{{ type.name }} - {{ type.tarif_hours|fc }}/h</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Marque</span></span>
+            <input class="input input-bordered" name="marque" value="{{ edit_vehicle.marque|default:'' }}" placeholder="Toyota">
+          </label>
+          <label class="form-control">
+            <span class="label"><span class="label-text font-bold">Couleur</span></span>
+            <input class="input input-bordered" name="couleur" value="{{ edit_vehicle.couleur|default:'' }}" placeholder="Blanc">
+          </label>
         </div>
 
-        <dl class="meta-grid">
-          <div><dt>Marque</dt><dd>{{ vehicle.marque|default:"-" }}</dd></div>
-          <div><dt>Photos</dt><dd>{{ vehicle.photos.count }}</dd></div>
-        </dl>
-
-        {% if vehicle.photos.all %}
-        <div class="photo-strip">
-          {% for photo in vehicle.photos.all %}
-          <div class="photo-thumb">
-            <img src="{{ photo.image.url }}" alt="Vehicule {{ vehicle.plaque }}">
-            {% if can_write_vehicle %}
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="delete_photo">
-              <input type="hidden" name="photo_id" value="{{ photo.id }}">
-              <button type="submit" aria-label="Supprimer la photo"><i class="fa-solid fa-xmark"></i></button>
-            </form>
-            {% endif %}
+        <section class="photo-picker mt-4 rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4" data-photo-picker data-photo-max="4">
+          <div class="photo-picker-head">
+            <div>
+              <span class="page-kicker">Photos du vehicule</span>
+              <p class="mt-1 text-sm text-base-content/60">
+                {% if edit_vehicle %}
+                  Les anciennes photos restent si aucun nouveau lot n'est envoye.
+                {% else %}
+                  Ajoute jusqu'a 4 photos.
+                {% endif %}
+              </p>
+            </div>
+            <strong class="photo-picker-count" data-photo-count>0 / 4 photos</strong>
           </div>
-          {% endfor %}
-        </div>
-        {% endif %}
 
-        <div class="card-actions">
-          {% if can_write_vehicle %}<a class="btn btn-outline-primary" href="?edit_vehicle={{ vehicle.id }}">Modifier</a>{% endif %}
-          {% if can_delete_vehicle %}
-          <form method="post" data-confirm="Supprimer ce vehicule ?">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete_vehicle">
-            <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
-            <button class="btn btn-outline-danger" type="submit">Supprimer</button>
-          </form>
+          {% if edit_vehicle and edit_vehicle.photos.all %}
+          <div class="photo-existing mt-3">
+            <span class="block text-xs font-semibold uppercase text-base-content/55">Photos actuelles</span>
+            <div class="photo-existing-grid mt-2">
+              {% for photo in edit_vehicle.photos.all %}
+              <img src="{{ photo.image.url }}" alt="Vehicule {{ edit_vehicle.plaque }}">
+              {% endfor %}
+            </div>
+            <p class="mt-2 text-xs text-base-content/55">Un nouveau lot remplace completement ces photos apres enregistrement.</p>
+          </div>
           {% endif %}
-        </div>
-      </article>
-      {% endfor %}
+
+          <div class="photo-preview-grid mt-3" data-photo-preview></div>
+          <label class="photo-picker-button mt-3" for="vehicle_photos" data-photo-button>
+            <span class="grid h-11 w-11 place-items-center rounded-lg bg-blue-100 text-blue-800">
+              {% include "web/partials/icon.html" with icon="camera" svg_class="h-5 w-5" %}
+            </span>
+            <span>
+              <strong class="block text-black">Prendre une photo</strong>
+              <span class="text-sm text-base-content/55">Camera ou galerie du telephone</span>
+            </span>
+          </label>
+          <input class="hidden" id="vehicle_photos" name="photos" type="file" accept="image/*" capture="environment" multiple data-photo-input>
+          <p class="photo-picker-error mt-2 hidden" data-photo-error></p>
+        </section>
+
+        <button class="btn btn-primary mt-4 w-full" type="submit">{% if edit_vehicle %}Enregistrer les changements{% else %}Enregistrer le vehicule{% endif %}</button>
+      </form>
     </div>
-  {% else %}
-    {% include "web/partials/empty.html" with title="Aucun vehicule" text="Les vehicules enregistres apparaitront ici." %}
+  </div>
   {% endif %}
+
+  {% if is_admin %}
+  <aside class="card border border-base-300 bg-base-100 shadow-sm">
+    <div class="card-body">
+      <div class="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <span class="badge badge-primary badge-outline mb-3">Tarifs</span>
+          <h2 class="card-title">Types de vehicules</h2>
+        </div>
+        {% if edit_type %}<a class="btn btn-ghost btn-sm" href="{% url 'web:vehicles' %}">Annuler</a>{% endif %}
+      </div>
+      <form class="grid gap-3" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_type">
+        {% if edit_type %}<input type="hidden" name="type_id" value="{{ edit_type.id }}">{% endif %}
+        <input class="input input-bordered" name="name" value="{{ edit_type.name|default:'' }}" placeholder="Moto" required>
+        <input class="input input-bordered" name="tarif_hours" type="number" min="0" step="0.01" value="{{ edit_type.tarif_hours|default:'' }}" placeholder="Tarif/h" required>
+        <button class="btn" type="submit">{% if edit_type %}Modifier{% else %}Ajouter{% endif %}</button>
+      </form>
+
+      {% if types %}
+      <div class="divider"></div>
+      <div class="grid gap-2">
+        {% for type in types %}
+        <a class="flex items-center justify-between rounded-box border border-base-300 p-3 hover:bg-base-200" href="?edit_type={{ type.id }}">
+          <span>{{ type.name }}</span>
+          <strong>{{ type.tarif_hours|fc }}/h</strong>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
+</section>
+
+<section class="card border border-base-300 bg-base-100 shadow-sm">
+  <div class="card-body">
+    <div class="mb-2">
+      <span class="badge badge-primary badge-outline mb-3">Base vehicules</span>
+      <h2 class="card-title">Vehicules connus</h2>
+    </div>
+
+    {% if vehicles %}
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Plaque</th>
+            <th>Type</th>
+            <th>Marque</th>
+            <th>Couleur</th>
+            <th>Photos</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vehicle in vehicles %}
+          <tr class="hover">
+            <td><strong class="text-black">{{ vehicle.plaque }}</strong></td>
+            <td>{{ vehicle.vehicle_type.name }}</td>
+            <td>{{ vehicle.marque|default:"-" }}</td>
+            <td><span class="badge">{{ vehicle.couleur|default:"-" }}</span></td>
+            <td>
+              <div class="vehicle-photo-cell">
+                {% if vehicle.photos.all %}
+                  {% for photo in vehicle.photos.all %}
+                  <div class="vehicle-photo-thumb">
+                    <img src="{{ photo.image.url }}" alt="Vehicule {{ vehicle.plaque }}">
+                    {% if can_write_vehicle %}
+                    <form method="post">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete_photo">
+                      <input type="hidden" name="photo_id" value="{{ photo.id }}">
+                      <button class="btn btn-circle btn-xs absolute right-0.5 top-0.5" type="submit" aria-label="Supprimer la photo">
+                        {% include "web/partials/icon.html" with icon="x" svg_class="h-3 w-3" %}
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-sm text-base-content/55">0 photo</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="flex flex-wrap justify-end gap-2">
+                {% if can_write_vehicle %}<a class="btn btn-ghost btn-sm" href="?edit_vehicle={{ vehicle.id }}">Modifier</a>{% endif %}
+                {% if can_delete_vehicle %}
+                <form method="post" data-confirm="Supprimer ce vehicule ?">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_vehicle">
+                  <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+                  <button class="btn btn-ghost btn-sm text-error" type="submit">Supprimer</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if hidden_vehicle_count %}
+    <p class="mt-4 rounded-box border border-dashed border-base-300 bg-base-200 p-4 text-sm text-base-content/60">
+      {{ hidden_vehicle_count }} vehicules supplementaires masques pour garder la page rapide.
+    </p>
+    {% endif %}
+    {% else %}
+      {% include "web/partials/empty.html" with title="Aucun vehicule" text="Les vehicules enregistres apparaitront ici." %}
+    {% endif %}
+  </div>
 </section>
 {% endblock %}
